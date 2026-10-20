@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wiki Zenkai</title>
+<meta name="description" content="Le wiki de Zenkai : techniques, clans, équipements et clicker.">
+<style>
+:root{--bg:#0e0f1a;--panel:#171929;--panel2:#1f2237;--line:#2c3050;--txt:#ece9f5;--mut:#8f93b5;--acc:#ff6a3d;--acc2:#4fd1ff;--ok:#5be3a0;--bad:#ff5c7a;--r:14px}
+*{box-sizing:border-box;margin:0}
+body{font-family:"Trebuchet MS","Segoe UI",sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:-20%;background:radial-gradient(circle at 20% 10%,color-mix(in srgb,var(--acc) 16%,transparent),transparent 40%),radial-gradient(circle at 85% 80%,color-mix(in srgb,var(--acc2) 14%,transparent),transparent 45%);animation:drift 18s ease-in-out infinite alternate;z-index:-1}
+@keyframes drift{to{transform:translate(4%,3%) scale(1.08)}}
+header{padding:76px 5vw 10px;display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between}
+h1{font-family:Georgia,"Times New Roman",serif;font-size:clamp(2rem,5vw,3.4rem);letter-spacing:-.02em;line-height:1;animation:rise .9s cubic-bezier(.2,.8,.2,1) both}
+h1 span{display:block;font-size:.38em;font-family:"Trebuchet MS",sans-serif;color:var(--mut);letter-spacing:.02em;margin-top:10px;font-weight:400}
+@keyframes rise{from{opacity:0;transform:translateY(24px);filter:blur(6px)}}
+.tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.saved{font-size:.85rem;color:var(--ok);opacity:0;transition:opacity .3s}
+.saved.on{opacity:1}
+main{display:grid;grid-template-columns:minmax(300px,1fr) minmax(300px,1fr) minmax(320px,1.1fr);gap:18px;padding:18px 5vw 60px}
+@media(max-width:1100px){main{grid-template-columns:1fr}}
+section{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:20px}
+h2{font-size:1.1rem;margin-bottom:14px;font-weight:700}
+button{font:inherit;color:var(--txt);background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 14px;cursor:pointer;transition:.18s}
+button:hover{border-color:var(--acc);transform:translateY(-1px)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--acc2);outline-offset:2px}
+button.on{background:var(--acc);border-color:var(--acc);color:#1a0d08;font-weight:700}
+button.go{background:var(--acc);color:#1a0d08;font-weight:700;border-color:var(--acc);width:100%;margin-top:14px;padding:11px}
+button.go:hover{box-shadow:0 0 22px rgba(255,106,61,.55)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.recipe{background:var(--panel2);border-radius:12px;padding:14px;min-height:96px;display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start}
+.mat{display:inline-flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:5px 12px 5px 8px;font-size:.92rem;animation:pop .35s both}
+@keyframes pop{from{opacity:0;transform:scale(.7)}}
+.mat b{color:var(--acc2)}
+.qty{display:flex;align-items:center;gap:10px;margin-top:14px}
+.qty span{color:var(--mut)}
+input[type=number]{width:74px;background:var(--bg);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:7px;font:inherit;text-align:center}
+.row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--panel2);border-radius:12px;margin-bottom:8px;animation:slide .35s both}
+@keyframes slide{from{opacity:0;transform:translateX(-18px)}}
+.row .n{flex:1}.row .n small{display:block;color:var(--mut);font-size:.78rem}
+.tier{font-weight:700;color:var(--acc);margin-right:6px}
+.step{width:30px;padding:4px 0;text-align:center}
+.empty{color:var(--mut);padding:24px 8px;text-align:center;line-height:1.5}
+.m{display:grid;grid-template-columns:1fr auto;gap:2px 12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.m:last-child{border:0}
+.bar{grid-column:1/-1;height:6px;background:var(--bg);border-radius:9px;overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));width:0;transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.m.done .bar i{background:var(--ok)}
+.st{color:var(--mut);font-size:.82rem}.miss{color:var(--bad);font-weight:700}.done .miss{color:var(--ok)}
+.own{display:flex;align-items:center;gap:6px}.own input{width:66px}
+.sum{display:flex;justify-content:space-between;color:var(--mut);font-size:.9rem;margin-bottom:8px}
+section{animation:rise .8s cubic-bezier(.2,.8,.2,1) both;transition:border-color .3s,box-shadow .3s;background:radial-gradient(320px circle at var(--mx,50%) var(--my,0%),rgba(255,255,255,.05),transparent),var(--panel)}
+section:nth-child(2){animation-delay:.12s}section:nth-child(3){animation-delay:.24s}
+section:hover{border-color:#43487a;box-shadow:0 14px 44px -20px rgba(79,209,255,.45)}
+canvas#fx{position:fixed;inset:0;z-index:-1;pointer-events:none}
+html{scroll-behavior:smooth}
+button:active{transform:scale(.94)}
+.row{animation:none}.row.new{animation:slide .45s cubic-bezier(.2,.8,.2,1) both}
+.row.out{animation:out .28s forwards;overflow:hidden}
+@keyframes out{to{opacity:0;transform:translateX(30px) scale(.95)}}
+.m{border-radius:8px;transition:background .4s}.m.flash{animation:flash 1s}
+@keyframes flash{30%{background:rgba(91,227,160,.2)}}
+.go.bump{animation:bump .45s}
+@keyframes bump{40%{transform:scale(1.03);box-shadow:0 0 34px rgba(255,106,61,.85)}}
+.mat{transition:transform .2s,border-color .2s}.mat:hover{transform:translateY(-2px);border-color:var(--acc2)}
+.tier{text-shadow:0 0 12px rgba(255,106,61,.7)}
+.sum span:last-child{color:var(--acc2);font-weight:700;font-size:1.05rem}
+.spk{position:fixed;width:7px;height:7px;border-radius:50%;pointer-events:none;z-index:9}
+.by{position:absolute;top:14px;right:5vw;display:flex;align-items:center;gap:10px;font-size:1.3rem;color:var(--mut);letter-spacing:.04em;animation:rise .9s .3s both}
+.by b{background:linear-gradient(90deg,var(--acc),var(--acc2),var(--acc));background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 4s linear infinite}
+@keyframes shine{to{background-position:-200% 0}}
+@media(prefers-reduced-motion:reduce){*,body::before{animation:none!important;transition:none!important}}
+
+:root{--t1:#9aa0b8;--t2:#5be3a0;--t3:#4fd1ff;--t4:#c084fc}
+:root.light{--bg:#f5f1ea;--panel:#fffdf9;--panel2:#f0eae0;--line:#ded5c6;--txt:#262033;--mut:#6d6781;--acc:#e8531f;--acc2:#0a88b8;--ok:#14935a;--bad:#d6264a;--t1:#7a8099;--t2:#14935a;--t3:#0a88b8;--t4:#8b3fd1}
+:root.light body::before{opacity:.45}:root.light .mat{background:#fff}:root.light canvas#fx{opacity:.5}
+:root.notc{--t1:var(--acc);--t2:var(--acc);--t3:var(--acc);--t4:var(--acc)}
+.tc1{--c:var(--t1)}.tc2{--c:var(--t2)}.tc3{--c:var(--t3)}.tc4{--c:var(--t4)}
+#tiers button{border-color:var(--c);color:var(--c)}#tiers button.on{background:var(--c);color:#111;border-color:var(--c)}
+.tier{color:var(--c,var(--acc))}.row{border-left:3px solid var(--c,var(--line))}.row .n{min-width:0}
+#toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);background:var(--panel2);border:1px solid var(--acc2);padding:10px 20px;border-radius:999px;opacity:0;pointer-events:none;transition:.3s;z-index:20}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+dialog{background:var(--panel);color:var(--txt);border:1px solid var(--line);border-radius:var(--r);padding:24px;width:min(460px,92vw);margin:auto}
+dialog::backdrop{background:rgba(5,6,15,.6);backdrop-filter:blur(4px)}dialog[open]{animation:rise .35s both}
+textarea{width:100%;background:var(--bg);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit;margin:10px 0;resize:vertical}
+.dl{display:flex;justify-content:flex-end;gap:8px;margin-top:10px}
+.sw{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.sw input{appearance:none;width:44px;height:24px;border-radius:99px;background:var(--line);position:relative;transition:.25s;cursor:pointer}
+.sw input::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.25s}
+.sw input:checked{background:var(--acc)}.sw input:checked::after{transform:translateX(20px)}
+.noanim,.noanim *,.noanim *::before,.noanim *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+.noember #fx,.noanim #fx{display:none}
+.ib{width:2.3rem;height:2.3rem;padding:0;border-radius:50%;font-size:1.2rem;line-height:1;display:grid;place-items:center}
+#gear:hover{transform:rotate(70deg)}
+.go.alt{background:var(--panel2);color:var(--txt);border-color:var(--line);margin-top:8px;font-weight:400}.go.alt:hover{box-shadow:none;border-color:var(--acc)}
+.th{display:flex;align-items:center;gap:12px;width:100%;margin-bottom:8px;text-align:left}.th i{width:46px;height:18px;border-radius:99px;display:block}
+.stk{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}.stk label{display:flex;flex-direction:column;gap:4px;font-size:.8rem;color:var(--mut)}.stk input{width:100%}
+.cr{display:flex;justify-content:space-between;gap:10px;padding:8px 12px;background:var(--panel2);border-radius:10px;margin-bottom:6px;border-left:3px solid var(--c)}.cr small{color:var(--mut);text-align:right}
+dialog h3{margin:16px 0 8px;font-size:.95rem}dialog{max-height:90vh;overflow:auto}#dCraft{width:min(560px,94vw)}
+:root[data-theme=feu]{--acc:#ff6a3d;--acc2:#ffb347}
+:root[data-theme=eau]{--acc:#3b9cff;--acc2:#5eead4}
+:root[data-theme=foudre]{--acc:#f5c518;--acc2:#a78bfa}
+:root[data-theme=vent]{--acc:#4fbf84;--acc2:#e0c878}
+:root[data-theme=akatsuki]{--acc:#e11d2e;--acc2:#ff8a93}
+:root[data-theme=akatsuki]:not(.light){--bg:#0a0508;--panel:#1a0c10;--panel2:#26131a;--line:#3d1b25}
+:root.light[data-theme=foudre]{--acc:#b88a00}:root.light[data-theme=vent]{--acc:#2f9a63;--acc2:#a8892a}:root.light[data-theme=eau]{--acc:#1f7fe0;--acc2:#12a58f}
+#dPick{text-align:center}#dPick h2{font-size:1.7rem;margin-bottom:4px}#dPick .dl{justify-content:center}.pkn{color:var(--mut);font-size:.85rem}
+.pko{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:20px 0 8px}.opt{padding:14px 24px;font-size:1.05rem;animation:pop .35s both}.opt:hover{background:var(--acc);color:#1a0d08}
+.ostr{display:flex;gap:8px;margin-bottom:8px}.ostr .th{margin:0;flex:1}.ostr{align-items:center}.ostr .ib{border-radius:10px;width:2.3rem;height:2.3rem;font-size:.95rem}
+.ar{display:flex;flex-direction:column;gap:2px}.ar button{padding:0 8px;font-size:.6rem;line-height:1;border-radius:6px;height:1.1rem}
+.vl{display:flex;gap:12px;align-items:center;color:var(--mut);margin-top:6px}.vl input{flex:1;accent-color:var(--acc)}
+.gwrap{padding:0 5vw 70px}#game{position:relative;overflow:hidden}
+.gh{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px}.gh h2{margin:0}
+.grank{padding:4px 14px;border-radius:99px;background:var(--panel2);border:1px solid var(--acc);color:var(--acc);font-weight:700}
+.gbody{display:grid;grid-template-columns:minmax(260px,1fr) minmax(300px,1.4fr);gap:24px;align-items:start}
+@media(max-width:800px){.gbody{grid-template-columns:1fr}}
+.gl{text-align:center}.gc b{display:block;font-size:2.8rem;font-family:Georgia,serif;color:var(--acc2);line-height:1}.gc span{color:var(--mut)}
+.gs{color:var(--mut);font-size:.9rem;margin:6px 0 16px}
+.tgt{width:150px;height:150px;border-radius:50%;font-size:4rem;padding:0;border:2px solid var(--acc);background:radial-gradient(circle,color-mix(in srgb,var(--acc) 30%,var(--panel2)),var(--panel2));box-shadow:0 0 30px color-mix(in srgb,var(--acc) 45%,transparent);animation:pulse 2.4s ease-in-out infinite;user-select:none;touch-action:manipulation}
+.tgt:hover{transform:scale(1.04)}.tgt:active{transform:scale(.92)}
+@keyframes pulse{50%{box-shadow:0 0 55px color-mix(in srgb,var(--acc) 70%,transparent)}}
+.gbar{height:8px;background:var(--bg);border-radius:9px;overflow:hidden;margin:18px 0 6px}.gbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--acc),var(--acc2));transition:width .3s}
+.gu{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 14px;margin-bottom:8px;border-radius:12px}
+.gu .n{flex:1}.gu small{display:block;color:var(--mut)}.gu .cost{color:var(--acc2)}.gu.no{opacity:.45}.gu:not(.no){border-color:var(--acc2)}
+.go:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;transform:none}
+.fl{position:absolute;pointer-events:none;font-weight:700;color:var(--acc2);animation:flt .8s forwards;z-index:4}
+@keyframes flt{to{transform:translateY(-70px);opacity:0}}
+.orb{position:absolute;width:56px;height:56px;border-radius:50%;padding:0;font-size:1.7rem;border:0;background:radial-gradient(circle,#fff7c2,var(--acc));box-shadow:0 0 28px var(--acc);animation:orb 1s ease-in-out infinite alternate;z-index:3}
+@keyframes orb{to{transform:scale(1.18)}}
+.gban{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}.gban h2{margin-bottom:4px}
+.gban .go{width:auto;margin:0;padding:14px 48px;font-size:1.15rem}
+#dGame{width:100vw;height:100vh;max-width:none;max-height:none;margin:0;border:0;border-radius:0;padding:22px 5vw}
+#dGame::backdrop{background:var(--bg)}
+#game{min-height:calc(100vh - 44px)}#dGame .gh h2{font-size:1.5rem}
+#dGame .gh .ib{width:2.8rem;height:2.8rem;font-size:1.5rem;border-color:var(--acc)}
+#dGame .gbody{grid-template-columns:minmax(300px,1fr) minmax(360px,1.4fr);gap:36px;margin-top:10px}
+#dGame .gc b{font-size:4rem}#dGame .tgt{width:230px;height:230px;font-size:6.5rem}
+#dGame #gup{max-height:calc(100vh - 190px);overflow:auto;padding-right:6px}
+#dGame .gl{position:sticky;top:0}
+@media(max-width:800px){#dGame .gbody{grid-template-columns:1fr}#dGame .gl{position:static}#dGame #gup{max-height:none}#dGame .tgt{width:180px;height:180px;font-size:5rem}}#dGame .gh .ib{margin-left:auto}#game{overflow:visible}
+div.gu{background:var(--panel2);border:1px solid var(--line)}.gu.ok{border-color:var(--ok)}.gu:disabled{opacity:.6}.gu button{padding:6px 16px}
+.chal{background:var(--panel2);border:1px solid var(--acc);border-radius:12px;padding:12px 14px;margin-bottom:12px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px}.chal button{padding:4px 14px}.chal .gbar{flex-basis:100%;margin:4px 0 0}
+.gur{display:flex;gap:8px;margin-bottom:8px}.gur .gu{margin:0;flex:1;width:auto}.gmax{min-width:100px;border-color:var(--acc2)}.gmax.no{opacity:.45;border-color:var(--line)}
+.cat{margin:16px 0 8px;color:var(--acc);font-size:.78rem;text-transform:uppercase;letter-spacing:.12em}.cat:first-child{margin-top:0}
+.orb.mini{width:38px;height:38px;font-size:1.1rem}
+.view{display:none}.view.on{display:block}main.view.on{display:grid}
+body:not([data-v=eq]) .tools{display:none}
+nav#nav{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;padding:6px 5vw 4px}
+nav .nl,nav .nr{display:flex;gap:8px;flex-wrap:wrap}nav .nl button{padding:10px 22px;font-size:1.02rem}
+body:not(.isadm) .adm{display:none!important}
+#gate{position:fixed;inset:0;z-index:100;background:var(--bg);display:grid;place-items:center;padding:20px}
+.gbox{width:min(420px,100%);text-align:center;display:flex;flex-direction:column;gap:12px;animation:rise .7s both}.gbox h1{font-size:2.4rem}.gbox p{color:var(--mut)}
+.gbox .go{margin:0}#gpwb{display:flex;flex-direction:column;gap:10px}#gpw{background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:12px;font:inherit}#gerr{color:var(--bad);min-height:1.2em}
+.wk{padding:12px 5vw 70px}.wk .chips{margin:14px 0}
+.pg{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:22px}.ph{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.pg h3{margin:18px 0 8px;color:var(--acc);font-size:.85rem;text-transform:uppercase;letter-spacing:.1em}
+.lore,.ent p,.fld{white-space:pre-wrap;line-height:1.55}.lore{color:var(--txt)}
+.ent{background:var(--panel2);border-radius:12px;padding:14px 16px;margin-bottom:10px;animation:slide .35s both}.eh{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.eh .adm{margin-left:auto;display:flex;gap:6px}
+.tag{font-size:.75rem;padding:2px 10px;border-radius:99px;border:1px solid var(--acc2);color:var(--acc2)}
+.fld{margin-top:8px;padding:8px 12px;background:var(--bg);border-radius:8px}.fld span{display:block;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--acc2);margin-bottom:2px}
+.vid{width:100%;aspect-ratio:16/9;border:0;border-radius:12px;margin:10px 0;background:#000}
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;margin:16px 0}
+.ccard{display:flex;flex-direction:column;align-items:center;gap:10px;padding:22px 10px;border-radius:16px}.ccard:hover{box-shadow:0 0 26px color-mix(in srgb,var(--acc) 40%,transparent)}
+.clg{width:70px;height:70px;border-radius:50%;display:grid;place-items:center;font-size:2rem;font-family:Georgia,serif;border:2px solid var(--acc);background:var(--panel2);color:var(--acc)}
+.ef{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;color:var(--mut);font-size:.85rem}.ef input,.ef textarea{background:var(--bg);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:8px;font:inherit}.vr{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+#dEd{width:min(560px,94vw)}
+.sb{position:relative;flex:1;min-width:200px;max-width:380px}.sb input{width:100%;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font:inherit}
+#sres{display:none;position:absolute;left:0;right:0;top:100%;margin-top:6px;z-index:50;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px;max-height:320px;overflow:auto}
+#sres button{display:block;width:100%;text-align:left;border:0;background:none}#sres small{color:var(--mut);margin-right:8px}
+.hh{font-family:Georgia,serif;font-size:1.8rem;margin:10px 0 4px}.hub{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}.hub .ccard{padding:34px 18px;text-align:center}.hub .clg{font-size:2.6rem}.hub small{color:var(--mut);line-height:1.4}
+.im{max-width:100%;max-height:340px;border-radius:12px;margin:12px 0;display:block}.flt{width:100%;max-width:340px;background:var(--bg);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font:inherit;margin:4px 0 12px;display:block}
+
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 24px}.tabs button{padding:11px 22px;border-radius:999px;font-weight:700;background:var(--panel)}
+.gg{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px}
+.gc{--ec:#8f93b5;position:relative;overflow:hidden;min-height:180px;border-radius:22px;padding:22px;text-align:left;display:flex;flex-direction:column;justify-content:flex-end;gap:4px;border:1px solid color-mix(in srgb,var(--ec) 45%,var(--line));background:linear-gradient(160deg,color-mix(in srgb,var(--ec) 36%,var(--panel)),var(--panel) 72%)}
+.gc .gi{position:absolute;right:-6px;top:-8px;font-size:7rem;line-height:1;opacity:.24;transition:.35s}
+.gc:hover{transform:translateY(-6px);border-color:var(--ec);box-shadow:0 20px 46px -16px var(--ec)}.gc:hover .gi{transform:scale(1.15) rotate(-8deg);opacity:.42}
+.gc b{font:700 1.55rem Georgia,serif}.gc small{color:var(--mut);line-height:1.4}
+.hub .gc{min-height:230px}.hh{font:700 clamp(2rem,5vw,3rem) Georgia,serif;margin:6px 0 4px}.hh0{margin-bottom:22px}.hh0 p{color:var(--mut)}
+.hero{--ec:#888;position:relative;overflow:hidden;display:flex;align-items:center;gap:20px;padding:30px 28px;border-radius:24px;border:1px solid color-mix(in srgb,var(--ec) 50%,var(--line));background:linear-gradient(120deg,color-mix(in srgb,var(--ec) 40%,var(--panel)),var(--panel) 75%);margin-bottom:20px}
+.hero .gi{font-size:4.4rem;line-height:1}.hero h2{font:700 clamp(1.8rem,5vw,2.8rem) Georgia,serif;margin:0}.hero p{color:var(--mut)}.hero .adm{margin-left:auto}.crumb{margin-bottom:14px}
+.rf{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 4px}.rf button{min-width:46px;font-weight:800;border-color:color-mix(in srgb,var(--rc,var(--line)) 65%,var(--line))}.rf button.on{background:var(--rc,var(--acc));border-color:var(--rc,var(--acc));color:#111}
+.rh{display:flex;align-items:center;gap:10px;margin:28px 0 12px;font-size:1.08rem;color:var(--rc)}.rh::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--rc),transparent)}.rh em{font-style:normal;color:var(--mut);font-size:.85rem}
+.tg{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.tc{position:relative;overflow:hidden;text-align:left;display:flex;flex-direction:column;gap:9px;padding:16px 16px 16px 22px;border-radius:16px;background:var(--panel);border:1px solid var(--line);min-height:112px}
+.tc::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--rc)}.tc .rk{position:absolute;right:12px;top:-8px;font:900 3.6rem Georgia,serif;color:var(--rc);opacity:.2}
+.tc:hover{transform:translateY(-4px);border-color:var(--rc);box-shadow:0 14px 34px -14px var(--rc)}.tc b{font-size:1.08rem;padding-right:38px}
+.ms{display:flex;gap:6px;flex-wrap:wrap}.ms i{font-style:normal;font-size:.8rem;background:var(--bg);border-radius:999px;padding:3px 10px;color:var(--mut)}.dm{font-size:.88rem}
+#det{position:fixed;inset:0;z-index:60;overflow:auto;display:none;background:radial-gradient(900px circle at 85% -10%,color-mix(in srgb,var(--ec) 30%,transparent),transparent 60%),var(--bg)}#det.on{display:block;animation:fadein .25s}@keyframes fadein{from{opacity:0}}
+.dt{max-width:1080px;margin:0 auto;padding:0 5vw 80px}.dbar{display:flex;gap:8px;align-items:center;justify-content:space-between;position:sticky;top:0;padding:16px 0;z-index:2;background:linear-gradient(var(--bg) 60%,transparent)}.dn{display:flex;gap:8px}
+.dh{position:relative;padding:26px 0 6px}.dh .wm{position:absolute;right:0;top:-6px;font:900 11rem/1 Georgia,serif;color:var(--rc);opacity:.12;pointer-events:none}.dh h2{font:700 clamp(2.2rem,6vw,4.2rem)/1.02 Georgia,serif;margin:14px 0 6px}
+.bd{display:inline-block;padding:5px 14px;border-radius:999px;font-weight:800;background:color-mix(in srgb,var(--rc) 22%,transparent);color:var(--rc);border:1px solid var(--rc);margin-right:10px}.bd2{color:var(--mut)}
+.st3{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin:24px 0}.sx{border-radius:18px;padding:18px 20px;background:color-mix(in srgb,var(--ec) 12%,var(--panel));border:1px solid color-mix(in srgb,var(--ec) 38%,var(--line))}.sx span{color:var(--mut);font-size:.85rem}.sx b{display:block;font:700 1.8rem Georgia,serif;margin-top:6px;word-break:break-word}
+.fxc{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px}.fxc span{padding:7px 14px;border-radius:999px;background:color-mix(in srgb,var(--ec) 16%,var(--panel2));border:1px solid color-mix(in srgb,var(--ec) 40%,var(--line))}
+.dg{display:grid;grid-template-columns:1.1fr 1fr;gap:28px;margin-top:10px}@media(max-width:800px){.dg{grid-template-columns:1fr}.dh .wm{font-size:7rem}}
+#det h3{margin:20px 0 10px}#det .vid{width:100%;aspect-ratio:16/9;border:0;border-radius:16px}
+#sres button{display:flex;gap:10px;align-items:center}#sres small{display:block;margin:0}.sb2{min-width:34px;text-align:center;font-weight:800;border-radius:8px;padding:4px 6px;background:color-mix(in srgb,var(--rc) 22%,transparent);color:var(--rc)}
+.qa{position:absolute;top:8px;left:8px;display:flex;gap:4px;z-index:3;opacity:0;transition:.2s}.gc:hover .qa,.tc:hover .qa,.qa:focus-within{opacity:1}@media(hover:none){.qa{opacity:1}}
+.qb{background:rgba(0,0,0,.62);color:#fff;border:1px solid rgba(255,255,255,.18);border-radius:8px;padding:3px 8px;font-size:.78rem;line-height:1.3;cursor:pointer}.qb:hover{background:var(--acc,#ffb347);color:#111}.qb.del:hover{background:#e0314b;color:#fff}
+.thc{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.5;z-index:0;transition:.35s}.gc:hover .thc{transform:scale(1.06);opacity:.72}.gc b,.gc small{position:relative;z-index:1;text-shadow:0 1px 8px #000}
+.hth{width:96px;height:96px;border-radius:20px;object-fit:cover;border:2px solid var(--ec)}.tci{position:absolute;right:10px;bottom:10px;width:56px;height:56px;border-radius:12px;object-fit:cover;border:1px solid var(--line)}
+</style>
+</head>
+<body>
+<canvas id="fx"></canvas>
+<div class="by"><span>Created by <b>MasPow_</b></span><button class="ib" id="gear" title="Paramètres">⚙</button><button class="ib" id="chill" title="Ambiance">🎨</button></div>
+<header>
+  <h1>Wiki Zenkai<span>Équipements, techniques, clans et clicker : tout le jeu au même endroit.</span></h1>
+  <div class="tools">
+    <span class="saved" id="saved">Sauvegardé</span>
+    <button id="exp">Copier la liste</button>
+    <button id="bak">Copier la sauvegarde</button>
+    <button id="impb">Importer</button>
+    <button id="rst">Tout effacer</button>
+  </div>
+</header>
+<nav id="nav"><span class="nl"><button data-v="hub">Accueil</button><button data-v="eq">Équipements</button><button data-v="te">Techniques</button><button data-v="cl">Clans</button><button data-v="ck">Clicker</button></span><span class="sb"><input id="sq" type="search" placeholder="Rechercher une technique, un clan…" autocomplete="off"><div id="sres"></div></span></nav>
+<div class="view" id="v-hub"></div>
+<main class="view" id="v-eq">
+  <section>
+    <h2>1. Choisir un plan</h2>
+    <div class="chips" id="pieces"></div>
+    <div class="chips" id="tiers"></div>
+    <div class="recipe" id="recipe"></div>
+    <div class="qty"><span>Quantité</span><input type="number" id="q" min="1" value="1"></div>
+    <button class="go" id="add">Ajouter à ma liste</button>
+    <button class="go alt" id="addset">Ajouter tout le set</button>
+  </section>
+  <section>
+    <h2>2. Ma liste de fabrication</h2>
+    <div id="plan"></div>
+  </section>
+  <section>
+    <h2>3. Matériaux</h2>
+    <div class="sum"><span id="sumL"></span><span id="sumR"></span></div>
+    <div id="mats"></div>
+    <button class="go alt" id="craftb">Je peux fabriquer quoi ?</button>
+  </section>
+</main>
+<div class="view" id="v-te"></div>
+<div class="view" id="v-cl"></div>
+<div class="gwrap view" id="v-ck"><section class="gban"><div><h2>Entraînement Zenkai</h2><p id="gsum" style="color:var(--mut)"></p></div><button class="go" id="gplay">Jouer</button></section></div>
+<div id="det"></div>
+<div id="toast"></div>
+<script id="wikidata" type="application/json">{"rev":2,"tech":[{"id":"nature","name":"Natures de chakra","groups":[{"id":"katon","name":"Katon","lore":"","image":"","video":"","entries":[{"id":"katon-boule-de-feu0","name":"Boule de feu","cat":"","rang":"D","chakra":"50","cd":"25s","desc":"","dmg":"100","fx":"","extra":"","image":"","video":""},{"id":"katon-mur-de-feu1","name":"Mur de Feu","cat":"","rang":"D","chakra":"60","cd":"30s","desc":"","dmg":"brûlure 5 (durée 3s)","fx":"","extra":"","image":"","video":""},{"id":"katon-la-balsamine2","name":"La Balsamine","cat":"","rang":"C","chakra":"65","cd":"40s","desc":"","dmg":"100/tir (3 tirs)","fx":"","extra":"","image":"","video":""},{"id":"katon-shurikens-pourpres3","name":"Shurikens Pourpres","cat":"","rang":"C","chakra":"60","cd":"30s","desc":"","dmg":"25/projectile (10 projectiles)","fx":"","extra":"","image":"","video":""},{"id":"katon-brasier-environnant4","name":"Brasier environnant","cat":"","rang":"B","chakra":"180","cd":"55s","desc":"","dmg":"1er hit 100 + 15/tick","fx":"","extra":"","image":"","video":""},{"id":"katon-feu-follet5","name":"Feu follet","cat":"","rang":"B","chakra":"155","cd":"45s","desc":"","dmg":"80/orbe (8 orbes)","fx":"","extra":"","image":"","video":""},{"id":"katon-tornade-enflammée6","name":"Tornade enflammée","cat":"","rang":"A","chakra":"300","cd":"100s","desc":"","dmg":"projection 300 + 5/tick","fx":"","extra":"","image":"","video":""},{"id":"katon-dragon-de-feu7","name":"Dragon de feu","cat":"","rang":"A","chakra":"270","cd":"80s","desc":"","dmg":"300","fx":"","extra":"","image":"","video":""},{"id":"katon-l-embrasement-suprême8","name":"L'embrasement Suprême","cat":"","rang":"S+","chakra":"950","cd":"195s","desc":"","dmg":"40/tick","fx":"","extra":"","image":"","video":""},{"id":"katon-nuée-ardente9","name":"Nuée Ardente","cat":"","rang":"S","chakra":"1000","cd":"180s","desc":"","dmg":"de base 500 (Bonus max +255)","fx":"","extra":"","image":"","video":""},{"id":"katon-les-dragons-jumeaux-enflammés10","name":"Les dragons jumeaux enflammés","cat":"","rang":"X","chakra":"1500","cd":"280s","desc":"","dmg":"directs 850 + 10/tick","fx":"","extra":"","image":"","video":""}]},{"id":"suiton","name":"Suiton","lore":"","image":"","video":"","entries":[]},{"id":"raiton","name":"Raiton","lore":"","image":"","video":"","entries":[{"id":"raiton-rayon-instantané0","name":"Rayon instantané","cat":"","rang":"D","chakra":"55","cd":"25s","desc":"","dmg":"30/tick","fx":"","extra":"","image":"","video":""},{"id":"raiton-boule-fulgurante1","name":"Boule fulgurante","cat":"","rang":"D","chakra":"60","cd":"30s","desc":"","dmg":"115","fx":"","extra":"","image":"","video":""},{"id":"raiton-zone-fulgurante2","name":"Zone fulgurante","cat":"","rang":"C","chakra":"70","cd":"40s","desc":"","dmg":"165","fx":"","extra":"","image":"","video":""},{"id":"raiton-ruée-foudroyante3","name":"Ruée foudroyante","cat":"","rang":"C","chakra":"70","cd":"30s","desc":"","dmg":"100 + 5/ticks","fx":"","extra":"","image":"","video":""},{"id":"raiton-frappes-pourfendeuses4","name":"Frappes pourfendeuses","cat":"","rang":"B","chakra":"150","cd":"70s","desc":"","dmg":"175","fx":"Nombre de projectiles 2","extra":"","image":"","video":""},{"id":"raiton-orage-foudroyant5","name":"Orage foudroyant","cat":"","rang":"B","chakra":"160","cd":"65s","desc":"","dmg":"300","fx":"","extra":"","image":"","video":""},{"id":"raiton-lariat6","name":"Lariat","cat":"","rang":"A","chakra":"290","cd":"85s","desc":"","dmg":"350","fx":"","extra":"","image":"","video":""},{"id":"raiton-pluie-foudroyante7","name":"Pluie foudroyante","cat":"","rang":"A","chakra":"300","cd":"90s","desc":"","dmg":"160/ticks","fx":"","extra":"","image":"","video":""},{"id":"raiton-foudre-dévastatrice8","name":"Foudre dévastatrice","cat":"","rang":"S","chakra":"1050","cd":"190s","desc":"","dmg":"350 + 50/ticks","fx":"","extra":"","image":"","video":""},{"id":"raiton-revêtement-de-foudre9","name":"Revêtement de foudre","cat":"","rang":"S+","chakra":"950","cd":"185s","desc":"","dmg":"","fx":"Nombre de dashs 4 · Boost vitesse 25% · Durée 15s · Boost dégâts 30%","extra":"","image":"","video":""},{"id":"raiton-cage-foudroyante10","name":"Cage foudroyante","cat":"","rang":"X","chakra":"1650","cd":"315s","desc":"","dmg":"sphère 40 · murs 400","fx":"Durée 6s","extra":"","image":"","video":""}]},{"id":"fûton","name":"Fûton","lore":"","image":"","video":"","entries":[{"id":"fûton-spirale-de-vent0","name":"Spirale de vent","cat":"","rang":"D","chakra":"50","cd":"25s","desc":"","dmg":"100","fx":"","extra":"","image":"","video":""},{"id":"fûton-mur-de-vent1","name":"Mur de vent","cat":"","rang":"D","chakra":"65","cd":"35s","desc":"","dmg":"","fx":"Durée du mur 8s","extra":"","image":"","video":""},{"id":"fûton-spirales-cinglantes2","name":"Spirales Cinglantes","cat":"","rang":"C","chakra":"65","cd":"40s","desc":"","dmg":"300","fx":"Nombre de projectiles 3","extra":"","image":"","video":""},{"id":"fûton-onde-de-choc3","name":"Onde de choc","cat":"","rang":"C","chakra":"70","cd":"50s","desc":"","dmg":"175","fx":"","extra":"","image":"","video":""},{"id":"fûton-bourrasque-tranchante4","name":"Bourrasque tranchante","cat":"","rang":"B","chakra":"155","cd":"60s","desc":"","dmg":"110","fx":"Nombre de projectiles 3","extra":"","image":"","video":""},{"id":"fûton-salve-tranchante5","name":"Salve tranchante","cat":"","rang":"B","chakra":"160","cd":"60s","desc":"","dmg":"20*20 (400)","fx":"","extra":"","image":"","video":""},{"id":"fûton-toile-de-vent6","name":"Toile de vent","cat":"","rang":"A","chakra":"300","cd":"90s","desc":"","dmg":"310","fx":"","extra":"","image":"","video":""},{"id":"fûton-souffle-destructeur7","name":"Souffle destructeur","cat":"","rang":"A","chakra":"270","cd":"85s","desc":"","dmg":"280 + 10/ticks","fx":"","extra":"","image":"","video":""},{"id":"fûton-découpe-dévastatrice8","name":"Découpe dévastatrice","cat":"","rang":"S","chakra":"1050","cd":"180s","desc":"","dmg":"35/ticks · total 900","fx":"Durée 6s","extra":"","image":"","video":""},{"id":"fûton-tornade-déchainée9","name":"Tornade déchainée","cat":"","rang":"S+","chakra":"1100","cd":"190s","desc":"","dmg":"35/ticks","fx":"Durée 8s","extra":"","image":"","video":""},{"id":"fûton-descente-des-cieux10","name":"Descente des cieux","cat":"","rang":"X","chakra":"1500","cd":"265s","desc":"","dmg":"800","fx":"","extra":"","image":"","video":""}]},{"id":"doton","name":"Doton","lore":"","image":"","video":"","entries":[]}]},{"id":"sub","name":"Subjutsu","flat":1,"groups":[{"id":"subjutsu","name":"Subjutsu","lore":"","image":"","video":"","entries":[]}]},{"id":"spec","name":"Spécialités","groups":[]},{"id":"kg","name":"Kekkei Genkai","groups":[{"id":"futton","name":"Futton","lore":"","image":"","video":"","entries":[{"id":"futton-boule-de-vapeur0","name":"Boule de vapeur","cat":"","rang":"D","chakra":"80","cd":"35s","desc":"","dmg":"105","fx":"","extra":"","image":"","video":""},{"id":"futton-assaut-vaporeux1","name":"Assaut Vaporeux","cat":"","rang":"C","chakra":"100","cd":"45s","desc":"","dmg":"130","fx":"","extra":"","image":"","video":""},{"id":"futton-vapeur-enveloppante2","name":"Vapeur enveloppante","cat":"","rang":"B","chakra":"175","cd":"85s","desc":"","dmg":"20/tick · totaux : 160","fx":"Durée 4s","extra":"","image":"","video":""},{"id":"futton-brume-tranchante3","name":"Brume tranchante","cat":"","rang":"A","chakra":"280","cd":"90s","desc":"","dmg":"25/tick · totaux : 250","fx":"Durée 6s","extra":"","image":"","video":""},{"id":"futton-vapeur-fatale4","name":"Vapeur Fatale","cat":"","rang":"S","chakra":"1000","cd":"190s","desc":"","dmg":"500","fx":"Charge 1,8s","extra":"","image":"","video":""}]},{"id":"deiton","name":"Deiton","lore":"","image":"","video":"","entries":[{"id":"deiton-boule-de-boue0","name":"Boule de Boue","cat":"","rang":"D","chakra":"80","cd":"35s","desc":"","dmg":"105","fx":"Slow 0,85 (2s)","extra":"","image":"","video":""},{"id":"deiton-ruée-de-boue1","name":"Ruée de Boue","cat":"","rang":"C","chakra":"100","cd":"45s","desc":"","dmg":"1er hit 115 + 3/tick","fx":"Slow 0,8 (2s)","extra":"","image":"","video":""},{"id":"deiton-taupe-boeuse2","name":"Taupe boeuse","cat":"","rang":"B","chakra":"175","cd":"75s","desc":"","dmg":"éruption 170","fx":"Boost vitesse 15% · Durée 4s","extra":"","image":"","video":""},{"id":"deiton-flaque-boueuse3","name":"Flaque Boueuse","cat":"","rang":"A","chakra":"280","cd":"90s","desc":"","dmg":"1er hit 250 + 3/tick","fx":"Slow 0,8 · Durée 8s","extra":"","image":"","video":""},{"id":"deiton-l-éruption-boueuse4","name":"L'Éruption Boueuse","cat":"","rang":"S","chakra":"1000","cd":"190s","desc":"","dmg":"explosion 200 + 5/tick","fx":"Slow 0,85 · Stun 1s · Durée 4s","extra":"","image":"","video":""}]},{"id":"ranton","name":"Ranton","lore":"","image":"","video":"","entries":[{"id":"ranton-nuages-fulgurants0","name":"Nuages Fulgurants","cat":"","rang":"D","chakra":"80","cd":"40s","desc":"","dmg":"26/éclair","fx":"","extra":"","image":"","video":""},{"id":"ranton-assaut-tempêtueux1","name":"Assaut Tempêtueux","cat":"","rang":"C","chakra":"140","cd":"45s","desc":"","dmg":"88/éclair (max 2/cible)","fx":"","extra":"","image":"","video":""},{"id":"ranton-cercle-nuageux2","name":"Cercle Nuageux","cat":"","rang":"B","chakra":"190","cd":"65s","desc":"","dmg":"220","fx":"Stun 1s","extra":"","image":"","video":""},{"id":"ranton-impulsion-tempêtueuse3","name":"Impulsion Tempêtueuse","cat":"","rang":"A","chakra":"290","cd":"105s","desc":"","dmg":"impact 200","fx":"Stacks · Boost vitesse 20% · Durée 35s","extra":"","image":"","video":""},{"id":"ranton-châtiment-des-cieux4","name":"Châtiment des Cieux","cat":"","rang":"S","chakra":"1200","cd":"200s","desc":"","dmg":"350/éclair (max 2 coups/cible)","fx":"Durée 6s","extra":"","image":"","video":""}]}]},{"id":"voie","name":"Voies de combat","groups":[{"id":"kenjutsu","name":"Kenjutsu","lore":"","image":"","video":"","entries":[]},{"id":"taijutsu","name":"Taijutsu","lore":"","image":"","video":"","entries":[]},{"id":"taijutsu-ka","name":"Taijutsu-ka","lore":"","image":"","video":"","entries":[]}]}],"clans":[{"id":"uchiha","name":"Uchiha","lore":"","image":"","video":"","entries":[],"logo":""},{"id":"senju","name":"Senju","lore":"","image":"","video":"","entries":[],"logo":""},{"id":"nara","name":"Nara","lore":"","image":"","video":"","entries":[],"logo":""},{"id":"akimichi","name":"Akimichi","lore":"","image":"","video":"","entries":[],"logo":""},{"id":"hyuga","name":"Hyuga","lore":"","image":"","video":"","entries":[],"logo":""},{"id":"hakumei","name":"Hakumei","lore":"","image":"","video":"","entries":[],"logo":""},{"id":"hoki","name":"Hoki","lore":"","image":"","video":"","entries":[],"logo":""},{"id":"shirogane","name":"Shirogane","lore":"","image":"","video":"","entries":[],"logo":""},{"id":"roran","name":"Roran","lore":"","image":"","video":"","entries":[],"logo":""},{"id":"sabaku","name":"Sabaku","lore":"","image":"","video":"","entries":[],"logo":""}]}</script>
+<dialog id="dGame"><div id="game">
+  <div class="gh"><h2>Entraînement Zenkai</h2><span class="grank" id="grank"></span><button class="ib" data-close title="Retour au site">↩</button></div>
+  <div class="gbody">
+    <div class="gl">
+      <div class="gc"><b id="gcn">0</b><span>Chakra</span></div>
+      <div class="gs" id="gstat"></div>
+      <button class="tgt" id="gtarget" aria-label="S'entraîner">🌀</button>
+      <div class="gbar"><i id="gprog"></i></div><div id="gnext" style="color:var(--mut);font-size:.85rem"></div>
+      <button class="go" id="gzen">Zenkai</button>
+      <button class="go alt" id="grst">Réinitialiser le jeu</button>
+    </div>
+    <div><div class="chips" id="gtabs"></div><div id="gch"></div><div id="gup"></div></div>
+  </div>
+</div></dialog>
+<dialog id="dPick"><div id="pk"></div><div class="dl"><button data-close>Annuler</button></div></dialog>
+<dialog id="dThm"><h2>Ambiance</h2><div id="thm"></div>
+<h3>OST</h3><div id="ost"></div><label class="vl"><span>Volume</span><input type="range" id="vol" min="0" max="100"></label><label class="sw"><span>🔁 Répéter la même OST</span><input type="checkbox" data-c="loop"></label>
+<button class="go alt" id="ostadd">+ Ajouter ma propre OST</button><input type="file" id="ostf" accept="audio/*" hidden><div class="dl"><button class="on" data-close>Fermer</button></div></dialog>
+<dialog id="dCraft"><h2>Je peux fabriquer quoi ?</h2><p style="color:var(--mut);font-size:.9rem">Indique ton stock, le site te dit ce que tu peux fabriquer.</p><div class="stk" id="stk"></div><div id="cres"></div><div class="dl"><button class="on" data-close>Fermer</button></div></dialog>
+<dialog id="dImp"><h2>Importer une sauvegarde</h2><p class="st" style="color:var(--mut)">Colle le code copié avec « Copier la sauvegarde ».</p><textarea id="impt" rows="7"></textarea><div class="dl"><button data-close>Annuler</button><button class="on" id="impok">Importer</button></div></dialog>
+<dialog id="dSet"><h2>Paramètres</h2>
+<label class="sw"><span>Mode clair</span><input type="checkbox" data-c="light"></label>
+<label class="sw"><span>Animations</span><input type="checkbox" data-c="anim"></label>
+<label class="sw"><span>Braises en fond</span><input type="checkbox" data-c="ember"></label>
+<label class="sw"><span>Statistiques du clicker</span><input type="checkbox" data-c="stats"></label>
+<label class="sw"><span>Sons</span><input type="checkbox" data-c="sound"></label>
+<label class="sw"><span>Couleurs des tiers</span><input type="checkbox" data-c="tc"></label>
+<div class="dl"><button class="on" data-close>Fermer</button></div></dialog>
+<script>
+const MAT={B:["Bois","🪵"],L:["Laine","🧶"],P:["Plastique","🧴"],C:["Cuivre","🟠"],T:["Titane","⚙️"],J:["Jade","💚"],F:["Fer","🔩"],CM:["Chakra Métal","🔮"]};
+const T4="B14 L14 P14 C14 T6 J6 F6 CM4";
+const DB={
+"Haut Jutsu":["L3 P3","L5 P5 J1","C7 L7 P7 F3 T3 CM1"],
+"Bas Jutsu":["C3 P3","C5 P5 F1","B7 C7 P7 J3 T3 CM1"],
+"Haut Armure":["B3 C3","B5 C5 F1","C7 L7 P7 J3 F3 CM1"],
+"Bas Armure":["B3 L3","B5 L5 T1","C7 L7 P7 J3 F3 CM1"],
+"Collier":["B3 L3","B5 L5 J1","B7 L7 C7 F3 T3 CM1"],
+"Bague":["B3 C3","B5 C5 F1","B7 L7 P7 F3 J3 CM1"],
+"Boucle":[null,null,"B7 L7 P7 J3 F3 CM1"],
+"Bottes":["C3 P3","C5 P5 T1","B7 L7 P7 T3 J3 CM1"],
+"Bottes Jutsu":[null,null,"B7 L7 P7 T3 J3 CM1"],
+"Bottes Armure":[null,null,"B7 C7 P7 J3 T3 CM1"],
+"Bottes Ténacité":[null,null,"B7 L7 C7 F3 T3 CM1"],
+"Gants":["L3 P3","L5 P5 T1","B7 C7 P7 T3 J3 CM1"]};
+Object.values(DB).forEach(a=>a.push(T4));
+DB["Bas Vie"]=[null,null,"B7 L7 C7 T7 F7 CM1",T4];
+const parse=s=>{const o={};for(const[,k,n]of s.matchAll(/([A-Z]+)(\d+)/g))o[k]=+n;return o};
+const $=id=>document.getElementById(id),H=document.documentElement;
+const KEY="atelier-zenkai-v1",DEF={light:false,anim:true,ember:true,tc:true,sound:false,theme:"",vol:40,loop:false,stats:false};
+const DEFO=[{id:"akatsuki",name:"Ambiance Akatsuki",gen:"akatsuki"},{id:"konoha",name:"Ambiance Konoha, après-midi",gen:"konoha"}];
+const GV=3,GD=()=>({c:0,tot:0,rt:0,u:[],z:0,tech:[],ch:[],zp:0,zt:{},bd:[],ach:[],st:{clk:0,sec:0,cmb:0,orb:0},seen:Date.now(),v:GV}),gfix=g=>g.v==GV?g:GD();
+const norm=d=>({game:gfix(Object.assign(GD(),d&&d.game)),ost:(d&&d.ost)||DEFO.map(o=>({...o})),plan:(d&&d.plan)||[],inv:(d&&d.inv)||{},cfg:Object.assign({},DEF,d&&d.cfg)});
+let S={},selP="Haut Jutsu",selT=3,newIdx=-1,W={},pc=0,tm,EC=["#ff6a3d","#4fd1ff"];
+try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+S=norm(S);
+const applyCfg=()=>{const c=S.cfg;H.classList.toggle("light",c.light);H.classList.toggle("noanim",!c.anim);H.classList.toggle("noember",!c.ember);H.classList.toggle("notc",!c.tc);H.dataset.theme=c.theme||"";const g=getComputedStyle(H);EC=[g.getPropertyValue("--acc").trim()||EC[0],g.getPropertyValue("--acc2").trim()||EC[1]]};
+const syncSet=()=>document.querySelectorAll("[data-c]").forEach(i=>i.checked=S.cfg[i.dataset.c]);
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));const e=$("saved");e.classList.add("on");clearTimeout(tm);tm=setTimeout(()=>e.classList.remove("on"),1200)}catch(e){}}
+function toast(m){const t=$("toast");t.textContent=m;t.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove("on"),1700)}
+function chip(o,i){return `<span class="mat" style="animation-delay:${(i||0)*55}ms"><span>${MAT[o[0]][1]}</span>${MAT[o[0]][0]} <b>×${o[1]}</b></span>`}
+function renderPick(){
+  $("pieces").innerHTML=Object.keys(DB).map(p=>`<button class="${p==selP?'on':''}" data-p="${p}">${p}</button>`).join("");
+  const av=DB[selP];if(!av[selT-1])selT=3;
+  $("tiers").innerHTML=[1,2,3,4].map(t=>av[t-1]?`<button class="tc${t} ${t==selT?'on':''}" data-t="${t}">T${t}</button>`:"").join("");
+  $("recipe").innerHTML=av[selT-1]=="x"?`<span class="mat"><b>Recette : x</b></span>`:Object.entries(parse(av[selT-1])).map(chip).join("");
+  $("addset").textContent="Ajouter tout le set T"+selT;
+}
+function totals(){const t={};S.plan.forEach(x=>{const r=parse(DB[x.piece][x.tier-1]);for(const k in r)t[k]=(t[k]||0)+r[k]*x.qty});return t}
+function renderPlan(){
+  $("plan").innerHTML=S.plan.length?S.plan.map((x,i)=>`<div class="row tc${x.tier}${newIdx>=0&&i>=newIdx?' new':''}"><div class="n"><span class="tier">T${x.tier}</span>${x.piece}<small>${DB[x.piece][x.tier-1]}</small></div>
+  <button class="step" data-d="-1" data-i="${i}">−</button><b class="qv">${x.qty}</b><button class="step" data-d="1" data-i="${i}">+</button><button data-x="${i}" title="Retirer">✕</button></div>`).join("")
+  :`<div class="empty">Ta liste est vide.<br>Choisis un plan à gauche et ajoute-le.</div>`;
+}
+function setSum(n,h){$("sumL").textContent=n?`${h} / ${n} ressources`:"";if(!n){$("sumR").textContent="";pc=0;return}const to=Math.round(h/n*100),from=pc,t0=performance.now();if(!S.cfg.anim){pc=to;$("sumR").textContent=to+" %";return}cancelAnimationFrame(setSum.r);(function f(t){const k=Math.min(1,(t-t0)/500),v=Math.round(from+(to-from)*(1-Math.pow(1-k,3)));$("sumR").textContent=v+" %";pc=v;if(k<1)setSum.r=requestAnimationFrame(f)})(t0)}
+function updSum(){const t=totals();let nd=0,hv=0;for(const j in t){nd+=t[j];hv+=Math.min(S.inv[j]||0,t[j])}setSum(nd,hv)}
+function renderMats(){
+  const t=totals(),shown=Object.keys(MAT).filter(k=>t[k]);
+  $("mats").innerHTML=shown.length?shown.map(k=>{const n=t[k],o=S.inv[k]||0,m=Math.max(0,n-o);
+    return `<div class="m ${m==0?'done':''}" data-k="${k}"><div>${MAT[k][1]} <b>${MAT[k][0]}</b><div class="st">Besoin : ${n} · <span class="miss">${m?'Manque '+m:'Complet'}</span></div></div>
+    <div class="own"><span class="st">J'en ai</span><input type="number" min="0" value="${o}" data-k="${k}"></div>
+    <div class="bar"><i data-w="${Math.min(100,o/n*100)}" style="width:${W[k]||0}%"></i></div></div>`}).join("")
+  :`<div class="empty">Les matériaux nécessaires apparaîtront ici.</div>`;
+  updSum();requestAnimationFrame(()=>requestAnimationFrame(()=>document.querySelectorAll("#mats .bar i").forEach(i=>{i.style.width=i.dataset.w+"%";W[i.closest(".m").dataset.k]=+i.dataset.w})));
+}
+function setInv(k,v,btn){const n=totals()[k];if(!n)return;S.inv[k]=Math.max(0,v);save();const p=document.querySelector(`#mats .m[data-k="${k}"]`),o=S.inv[k],w=Math.min(100,o/n*100),dn=o>=n;if(btn)p.querySelector("input[data-k]").value=o;p.querySelector(".bar i").style.width=w+"%";W[k]=w;if(dn&&!p.classList.contains("done")){p.classList.remove("flash");void p.offsetWidth;p.classList.add("flash");spark(p,"#5be3a0");sOk()}p.classList.toggle("done",dn);p.querySelector(".miss").textContent=dn?"Complet":"Manque "+(n-o);updSum()}
+const all=()=>{renderPick();renderPlan();renderMats();gRender();gUpdate()};
+function spark(el,col){if(!S.cfg.anim)return;const r=el.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;for(let i=0;i<16;i++){const d=document.createElement("i");d.className="spk";d.style.cssText=`left:${cx}px;top:${cy}px;background:${col};box-shadow:0 0 10px ${col}`;document.body.appendChild(d);const a=Math.random()*6.28,l=40+Math.random()*70;d.animate([{transform:"translate(0,0) scale(1)",opacity:1},{transform:`translate(${Math.cos(a)*l}px,${Math.sin(a)*l}px) scale(0)`,opacity:0}],{duration:550+Math.random()*350,easing:"cubic-bezier(.2,.8,.2,1)"}).onfinish=()=>d.remove()}}
+async function copy(t,m){try{await navigator.clipboard.writeText(t)}catch(e){const a=document.createElement("textarea");a.value=t;document.body.appendChild(a);a.select();document.execCommand("copy");a.remove()}toast(m)}
+function report(){const K=Object.keys(MAT),tot={};let o="";S.plan.forEach(x=>{const r=parse(DB[x.piece][x.tier-1]),lab=`${x.piece} T${x.tier}`+(x.qty>1?` x${x.qty}`:"");o+=lab+" :\n";K.forEach(k=>{if(r[k]){const v=r[k]*x.qty;o+=`${k} : ${v}\n`;(tot[k]=tot[k]||[]).push(v)}});o+="\n"});o+="Total :\n";K.forEach(k=>{if(tot[k]){const n=tot[k].reduce((a,v)=>a+v,0),h=S.inv[k]||0;o+=`${k} : ${tot[k].join(" + ")} = ${n}`+(h?` - ${h} = ${Math.max(0,n-h)}`:"")+"\n"}});return o}
+const THEMES=[["","Classique","#ff6a3d","#4fd1ff"],["feu","Feu","#ff6a3d","#ffb347"],["eau","Eau","#3b9cff","#5eead4"],["foudre","Foudre","#f5c518","#a78bfa"],["vent","Vent","#4fbf84","#e0c878"],["akatsuki","Akatsuki","#e11d2e","#ff8a93"]];
+const renderThm=()=>$("thm").innerHTML=THEMES.map(([id,n,a,c])=>`<button class="th ${(S.cfg.theme||"")==id?'on':''}" data-th="${id}"><i style="background:linear-gradient(90deg,${a},${c})"></i>${n}</button>`).join("");
+let AC;const snd=(f,d,ty="sine",v=.06,t=0)=>{if(!S.cfg.sound)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain(),n=AC.currentTime+t;o.type=ty;o.frequency.value=f;g.gain.setValueAtTime(v,n);g.gain.exponentialRampToValueAtTime(.0001,n+d);o.connect(g).connect(AC.destination);o.start(n);o.stop(n+d)}catch(e){}};
+const sClick=()=>snd(700,.05,"triangle",.035),sForge=()=>{snd(220,.35,"square",.05);snd(587,.25,"triangle",.06);snd(1240,.18,"sine",.04,.01)},sOk=()=>[523,659,784,1047].forEach((f,i)=>snd(f,.28,"triangle",.06,i*.09));
+function renderCraft(){const ok=[],near=[];
+  for(const p in DB)DB[p].forEach((r,i)=>{if(!r||r=="x")return;const q=parse(r),miss=[];let tot=0;for(const k in q){const m=q[k]-(S.inv[k]||0);if(m>0){miss.push(m+" "+MAT[k][0]);tot+=m}}const e={p,t:i+1,miss,tot};tot==0?ok.push(e):tot<=3&&near.push(e)});
+  near.sort((a,b)=>a.tot-b.tot);
+  const row=e=>`<div class="cr tc${e.t}"><span><b class="tier">T${e.t}</b> ${e.p}</span><small>${e.miss.length?"Il te manque "+e.miss.join(", "):"Prêt !"}</small></div>`;
+  const none=m=>`<div style="color:var(--mut)">${m}</div>`;
+  $("cres").innerHTML=`<h3>Fabricables maintenant (${ok.length})</h3>${ok.map(row).join("")||none("Rien pour l’instant.")}<h3>Presque, 3 ressources ou moins (${near.length})</h3>${near.map(row).join("")||none("Rien de proche.")}`}
+const SLOTS=[["Haut",["Haut Jutsu","Haut Armure"]],["Bas",["Bas Jutsu","Bas Armure","Bas Vie"]],["Collier",["Collier"]],["Bague",["Bague"]],["Boucle",["Boucle"]],["Bottes",["Bottes Ténacité","Bottes Jutsu","Bottes Armure"],"Bottes"],["Gants",["Gants"]]];
+let PK={};
+function startSet(){const av=p=>!!DB[p][selT-1];const sl=SLOTS.map(([l,o,f])=>{let a=o.filter(av);if(!a.length&&f&&av(f))a=[f];return{l,a}}).filter(x=>x.a.length);PK={sl,ask:sl.filter(x=>x.a.length>1),i:0,res:{}};nextQ()}
+function nextQ(){if(PK.i>=PK.ask.length){if($("dPick").open)$("dPick").close();return finSet()}const s=PK.ask[PK.i];$("pk").innerHTML=`<h2>${s.l}</h2><div class="pkn">${PK.i+1} / ${PK.ask.length}</div><div class="pko">${s.a.map(p=>`<button class="opt" data-pk="${p}">${p.replace(s.l+" ","")}</button>`).join("")}</div>`;if(!$("dPick").open)$("dPick").showModal()}
+function finSet(){const q=Math.max(1,+$("q").value||1),first=S.plan.length;PK.sl.forEach(x=>{const p=x.a.length>1?PK.res[x.l]:x.a[0],f=S.plan.find(y=>y.piece==p&&y.tier==selT);f?f.qty+=q:S.plan.push({piece:p,tier:selT,qty:q})});newIdx=S.plan.length>first?first:-1;save();renderPlan();renderMats();newIdx=-1;spark($("addset"),EC[0]);sForge();toast("Set T"+selT+" ajouté")}
+const esc=t=>t.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const AU=new Audio();AU.addEventListener("ended",()=>nextTrack());let GT=0;AU.volume=S.cfg.vol/100;let playing="",PO="";
+const idb=()=>new Promise((res,rej)=>{const r=indexedDB.open("zenkai-ost",1);r.onupgradeneeded=()=>r.result.createObjectStore("f");r.onsuccess=()=>res(r.result);r.onerror=()=>rej()});
+const idbGet=async k=>{try{const d=await idb();return await new Promise(r=>{const q=d.transaction("f").objectStore("f").get(k);q.onsuccess=()=>r(q.result);q.onerror=()=>r()})}catch(e){}};
+const idbDel=async k=>{try{const d=await idb();d.transaction("f","readwrite").objectStore("f").delete(k)}catch(e){}};
+const idbSet=async(k,v)=>{try{const d=await idb();d.transaction("f","readwrite").objectStore("f").put(v,k)}catch(e){}};
+const renderOst=()=>$("ost").innerHTML=S.ost.length?S.ost.map(o=>`<div class="ostr"><button class="th ${playing==o.id?'on':''}" data-ost="${o.id}"><span>${playing==o.id?"⏸":"▶"}</span>${esc(o.name)}</button><span class="ar"><button data-mv="${o.id}" data-dir="-1" title="Monter">▲</button><button data-mv="${o.id}" data-dir="1" title="Descendre">▼</button></span><button class="ib" data-ren="${o.id}" title="Renommer">✎</button><button class="ib" data-of="${o.id}" title="Choisir le fichier audio">📁</button><button class="ib" data-del="${o.id}" title="Supprimer">✕</button></div>`).join(""):`<div class="empty" style="padding:10px">Aucune OST pour l’instant.</div>`;
+let GEN=null;
+function genStop(){if(!GEN)return;clearInterval(GEN.t);const o=GEN.out;o.gain.setTargetAtTime(0,AC.currentTime,.25);setTimeout(()=>o.disconnect(),1500);GEN=null}
+function genStart(id){AC=AC||new(window.AudioContext||window.webkitAudioContext)();AC.resume();genStop();
+  const out=AC.createGain(),bus=AC.createGain(),dl=AC.createDelay(1),fb=AC.createGain(),wet=AC.createGain();
+  out.gain.value=0;out.gain.setTargetAtTime(S.cfg.vol/100,AC.currentTime,.4);dl.delayTime.value=.37;fb.gain.value=.45;wet.gain.value=.35;
+  dl.connect(fb);fb.connect(dl);dl.connect(wet);wet.connect(out);bus.connect(out);bus.connect(dl);out.connect(AC.destination);
+  const note=(f,t,d,ty,v)=>{const o=AC.createOscillator(),g=AC.createGain();o.type=ty;o.frequency.value=f;g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(v,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(bus);o.start(t);o.stop(t+d+.05)};
+  const taiko=t=>{const o=AC.createOscillator(),g=AC.createGain();o.frequency.setValueAtTime(110,t);o.frequency.exponentialRampToValueAtTime(40,t+.35);g.gain.setValueAtTime(.5,t);g.gain.exponentialRampToValueAtTime(.0001,t+.6);o.connect(g);g.connect(bus);o.start(t);o.stop(t+.7)};
+  const AK=[220,261.63,246.94,329.63,220,207.65,246.94,196];
+  const akStep=(i,t)=>{note(AK[i%8],t,2,"triangle",.13);if(i%8==3)note(AK[i%8]*2,t,1.5,"sine",.05);if(i%4==0)taiko(t);if(i%16==0){note(55,t,14,"sine",.25);note(82.41,t,14,"triangle",.1)}};
+  const CH=[["c1","Sprint de l'Académie",30,2e4,"click",1.1],["c2","Souffle de l'Ermite",45,1e6,"auto",1.15],["c3","Épreuve Chûnin",60,5e6,"both",1.2],["c4","Combat de Jônin",60,1e7,"click",1.25],["c5","Marathon Sannin",90,5e9,"auto",1.3],["c6","Duel de Kage",60,5e10,"both",1.5]];
+  const knStep=(i,t)=>{const c=CH[Math.floor(i/8)%4],j=i%8;note(c[AR[j]],t,.9,"triangle",.14);if(j==0){c.slice(0,3).forEach(f=>note(f,t,2.8,"sine",.05));note(c[0]/2,t,2.6,"sine",.16)}if(j%2==0&&Math.random()<.5)note(PE[Math.floor(Math.random()*5)],t,1.2,"sine",.08)};
+  const dur=id=="akatsuki"?.833:.357,fn=id=="akatsuki"?akStep:knStep;let step=0,next=AC.currentTime+.1;
+  const tick=()=>{while(next<AC.currentTime+.6){fn(step,next);next+=dur;step++}};
+  GEN={t:setInterval(tick,150),out};tick()}
+const armGT=()=>{GT=setTimeout(()=>{S.cfg.loop?armGT():nextTrack()},120000)};
+const stopAll=()=>{AU.pause();genStop();clearTimeout(GT);playing=""};
+async function playOst(id,hop=0){const o=S.ost.find(x=>x.id==id),b=await idbGet(id);stopAll();if(b){AU.src=URL.createObjectURL(b);AU.loop=!!S.cfg.loop;AU.volume=S.cfg.vol/100;try{await AU.play();playing=id}catch(e){}}else if(o&&o.gen){genStart(o.gen);playing=id;armGT()}
+  if(!playing){if(hop&&hop<S.ost.length)return nextTrack(id,hop);toast("Pas encore de musique : clique sur 📁")}renderOst()}
+function nextTrack(from=playing,hop=0){const i=S.ost.findIndex(x=>x.id==from);if(i<0||!S.ost.length){stopAll();return renderOst()}playOst(S.ost[(i+1)%S.ost.length].id,hop+1)}
+$("ostf").addEventListener("change",async e=>{const f=e.target.files[0];e.target.value="";if(!f||!PO)return;let id=PO;if(PO=="new"){id="c"+Date.now();S.ost.push({id,name:f.name.replace(/\.[^.]+$/,"").slice(0,40)||"Nouvelle OST",gen:null});save()}await idbSet(id,f);toast("Fichier enregistré");playOst(id)});
+document.addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;const d=b.dataset;if(b.id!="add"&&b.id!="addset")sClick();
+  if(d.p){selP=d.p;renderPick()}
+  else if(d.t){selT=+d.t;renderPick()}
+  else if(b.id=="add"){const q=Math.max(1,+$("q").value||1),f=S.plan.find(x=>x.piece==selP&&x.tier==selT);f?f.qty+=q:S.plan.push({piece:selP,tier:selT,qty:q});newIdx=f?-1:S.plan.length-1;save();renderPlan();renderMats();newIdx=-1;spark(b,EC[0]);sForge();b.classList.remove("bump");void b.offsetWidth;b.classList.add("bump")}
+  else if(d.d){const x=S.plan[+d.i];x.qty=Math.max(1,x.qty+ +d.d);save();b.parentNode.querySelector(".qv").textContent=x.qty;renderMats()}
+  else if(d.x!==undefined){b.closest(".row").classList.add("out");setTimeout(()=>{S.plan.splice(+d.x,1);save();renderPlan();renderMats()},S.cfg.anim?280:0)}
+  else if(b.id=="addset")startSet();
+  else if(d.pk){PK.res[PK.ask[PK.i].l]=d.pk;PK.i++;nextQ()}
+  else if(d.th!==undefined){S.cfg.theme=d.th;save();applyCfg();renderThm()}
+  else if(b.id=="chill"){renderThm();renderOst();syncSet();$("vol").value=S.cfg.vol;$("dThm").showModal()}
+  else if(b.id=="craftb"){$("stk").innerHTML=Object.keys(MAT).map(k=>`<label>${MAT[k][1]} ${k}<input type="number" min="0" value="${S.inv[k]||0}" data-ck="${k}"></label>`).join("");renderCraft();$("dCraft").showModal()}
+  else if(d.ost){playing==d.ost?(stopAll(),renderOst()):playOst(d.ost)}
+  else if(d.of){PO=d.of;$("ostf").click()}
+  else if(b.id=="ostadd"){PO="new";$("ostf").click()}
+  else if(d.ren){const o=S.ost.find(x=>x.id==d.ren),n=prompt("Nom de l'OST :",o.name);if(n&&n.trim()){o.name=n.trim().slice(0,40);save();renderOst()}}
+  else if(d.del){if(confirm("Supprimer cette OST ?")){if(playing==d.del)stopAll();S.ost=S.ost.filter(x=>x.id!=d.del);idbDel(d.del);save();renderOst()}}
+  else if(d.mv){const i=S.ost.findIndex(x=>x.id==d.mv),j=i+ +d.dir;if(j>=0&&j<S.ost.length){[S.ost[i],S.ost[j]]=[S.ost[j],S.ost[i]];save();renderOst()}}
+  else if(d.close!==undefined)b.closest("dialog").close();
+  else if(b.id=="rst"){if(confirm("Effacer la liste, l'inventaire et les prix ?")){S=norm({cfg:S.cfg,ost:S.ost,game:S.game});save();all()}}
+  else if(b.id=="exp"){S.plan.length?copy(report(),"Liste copiée !"):toast("Ta liste est vide")}
+  else if(b.id=="bak")copy(JSON.stringify(S),"Sauvegarde copiée !");
+  else if(b.id=="impb"){$("impt").value="";$("dImp").showModal()}
+  else if(b.id=="impok"){try{const x=JSON.parse($("impt").value);if(!x.plan||!x.inv)throw 0;S=norm(x);save();applyCfg();syncSet();all();$("dImp").close();toast("Sauvegarde importée !")}catch(er){toast("Code invalide")}}
+  else if(b.id=="gear"){syncSet();$("dSet").showModal()}
+});
+document.addEventListener("input",e=>{const t=e.target,d=t.dataset;
+  if(t.id=="vol"){S.cfg.vol=+t.value;AU.volume=t.value/100;if(GEN)GEN.out.gain.setTargetAtTime(t.value/100,AC.currentTime,.1);save()}
+  else if(d.c){S.cfg[d.c]=t.checked;save();applyCfg();if(d.c=="loop")AU.loop=t.checked}
+  else if(d.ck){S.inv[d.ck]=Math.max(0,+t.value||0);save();renderCraft();renderMats()}
+  else if(d.k)setInv(d.k,+t.value||0);
+});
+document.addEventListener("mousemove",e=>{const s=e.target.closest&&e.target.closest("section");if(s){const r=s.getBoundingClientRect();s.style.setProperty("--mx",e.clientX-r.left+"px");s.style.setProperty("--my",e.clientY-r.top+"px")}});
+(function(){const c=$("fx"),x=c.getContext("2d");if(matchMedia("(prefers-reduced-motion:reduce)").matches)return;let w,h;const rs=()=>{w=c.width=innerWidth;h=c.height=innerHeight};rs();addEventListener("resize",rs);const P=Array.from({length:45},()=>({x:Math.random()*w,y:Math.random()*h,r:Math.random()*2+.6,v:Math.random()*.5+.15,d:Math.random()*6,o:Math.random()>.5}));(function f(t){requestAnimationFrame(f);if(H.classList.contains("noember")||H.classList.contains("noanim"))return;x.clearRect(0,0,w,h);for(const p of P){p.y-=p.v;p.x+=Math.sin(t/1500+p.d)*.3;if(p.y<-10){p.y=h+10;p.x=Math.random()*w}x.globalAlpha=.35+.25*Math.sin(t/700+p.d);x.fillStyle=p.o?EC[0]:EC[1];x.beginPath();x.arc(p.x,p.y,p.r,0,7);x.fill()}})(0)})();
+let ac=null,gtab=0,cb=0,lastR=-1,fr=0;
+const SF=["","K","M","B","T","Qd","Qn","Sx","Sp","Oc","No"],sf=k=>k<11?SF[k]:["","U","D","T","Qa","Qi","Sx","Sp","Oc","No"][k%10]+["Dc","Vg","Tg","Qg","Qq","Sg","Sq","Og","Ng"][Math.floor(k/10)-1];
+const nf=n=>{if(n<10)return String(+n.toFixed(2));if(n<1e3)return Math.floor(n)+"";const k=Math.floor(Math.log10(n)/3);if(k>99)return n.toExponential(2);return (n/Math.pow(10,3*k)).toFixed(2)+sf(k)};
+const RR=2.55,CAT=["Académie","Genin","Chûnin","Jônin","ANBU","Jônin d'élite","Sannin","Garde du Kage","Kage","Légende","Ermite","Sage des Six Chemins","Réincarné","Otsutsuki","Dieu Shinobi"];
+const UP="Pompes ninja|Lancer de shuriken|Lancer de kunai|Course autour de Konoha|Méditation du chakra|Technique de Transformation|Technique de Substitution|Clone basique|Parchemin d'étude|Position du Tigre|Position du Serpent|Position du Bœuf|Examen écrit|Bandeau frontal|Entraînement de cibles|Combat d'entraînement|Cours d'Iruka|Cours de survie|Salle de classe|Examen des clones|Diplôme de l'Académie|Équipe 7|Épreuve des clochettes|Marche sur les arbres|Mission de rang D|Chasse au chat Tora|Kunai explosif|Fil ninja|Marche sur l'eau|Mission du Pays des Vagues|Kage Bunshin no Jutsu|Rasengan : première étape|Parchemin explosif|Poids d'entraînement|Taijutsu de Lee|Entraînement de Kakashi|Mission de rang C|Pont de Tazuna|Maîtrise du Katon|Maîtrise du Suiton|Maîtrise du Raiton|Cérémonie des Genin|Examen Chûnin|Forêt de la Mort|Parchemin du Ciel|Parchemin de la Terre|Combats préliminaires|Poing souple|Hakke Rokujūyon Shō|Sable de Gaara|Armure de sable|Ombre de Shikamaru|Fils de marionnettiste|Éventail de Temari|Lames de Tenten|Insectes de Shino|Chidori de Sasuke|Sceau maudit|Invocation de crapaud|Gamabunta|Maîtrise du Fûton|Maîtrise du Doton|Invasion de Konoha|Entraînement de Jiraiya|Rasengan complet|Chidori maîtrisé|Raikiri|Sharingan à deux virgules|Sharingan à trois virgules|Genjutsu avancé|Invocation de serpent|Kusanagi|Hachimon Tonkō : première porte|Sceau des Quatre Symboles|Ninjutsu médical|Poing de Tsunade|Technique des Mille Oiseaux|Maîtrise du Yin|Maîtrise du Yang|Fūinjutsu|Kunai du Quatrième|Clone de Fumée|Substitution avancée|Brevet de Jônin|Masque d'ANBU|Mission de rang S|Technique de l'ombre|Infiltration|Poison ninja|Clones de bois|Racines|Sceau maudit de Danzō|Tranchant du Kunai volant|Hiraishin : repérage|Technique de Marquage|Manteau d'ANBU|Dôjutsu avancé|Mangekyō Sharingan|Kamui|Technique interdite|Parchemin interdit|Édo Tensei : étude|Genjutsu de l'ombre|Substitution du Rocher|Capitaine ANBU|Garde du feu|Porte du Repos|Porte de la Vie|Porte de la Blessure|Porte de la Limite|Porte de la Vue|Porte de la Merveille|Porte de la Mort|Mode Ermite : crapauds|Mode Ermite : serpents|Mode Ermite : limaces|Byakugan avancé|Tenseigan|Kaiten parfait|Hakke Kūshō|Rasengan géant|Rasengan de terre|Rasengan de feu|Chidori Sen'bon|Susanoo : côtes|Susanoo : squelette|Légende de Konoha|Technique du Pays du Feu|Alliance des Cinq Pays|Sceau de Byakugō|Création de Renaissance|Invocation de Katsuyu|Invocation de Manda|Invocation de Gamabunta|Mode Ermite parfait|Rasenshuriken|Katon : Grande boule de feu|Suiton : Dragon d'eau|Raiton : Lame de foudre|Fûton : Grande percée|Doton : Mur de terre|Mokuton : Technique des bois|Ranton|Futton|Shakuton|Hyōton|Yōton|Sceau du Kage|Chapeau du Kage|Manteau du Kage|Bureau du Kage|Réunion des Kage|Barrière de Konoha|Sceau du Kyûbi|Chakra du Kyûbi|Contrôle de Kurama|Mode Chakra du Kyûbi|Bijū Dama|Susanoo parfait|Amaterasu|Tsukuyomi|Izanagi|Izanami|Kotoamatsukami|Kamui avancé|Hiraishin complet|Jiton|Bakuton|Édo Tensei|Cercueils|Réincarnation des Kage|Sceau de l'âme|Rinnegan|Shinra Tensei|Bansho Ten'in|Chibaku Tensei|Gakidō|Naraka Dō|Chikushōdō|Ningendō|Shuradō|Tendō|Rinne Rebirth|Mode Baryon|Chakra du Kyûbi complet|Sceau des Huit Trigrammes|Mode Sage des Six Chemins|Orbes de la Vérité|Sceau des Neuf Queues|Légende des Sannin|Légende de l'Uchiha|Légende de l'Uzumaki|Légende du Senju|Légende du Hyūga|Légende de la Quatrième Guerre|Alliance Shinobi|Armée des Cinq Pays|Bataille des Bijū|Alliance des Bijū|Jūbi|Dix-Queues|Chakra des Dix-Queues|Orbe de Chakra|Gedō Mazō|Statue Gedō|Sceau de la Statue|Jinchūriki parfait|Contrôle des Bijū|Union des Jinchūriki|Union des Kage|Sage des Crapauds|Sage des Serpents|Sage des Limaces|Mode Ermite parfait|Chakra naturel|Chakra de la Nature|Sennin Mōdo|Rasengan du Sage|Rasenshuriken du Sage|Pierre Sage|Tablette du Sage|Mont Myōboku|Grotte de Ryūchi|Bois de Shikkotsu|Forêt d'Émeraude|Grand Crapaud Sage|Maître Sage|Fukasaku|Shima|Pein Sage|Maître de la Nature|Sage Hagoromo|Chakra de Hagoromo|Bâton du Sage|Rinnegan parfait|Pouvoir de Hagoromo|Sceau du Sage|Trois Voies|Quatre Voies|Cinq Voies|Six Voies|Boules de Vérité|Voie de la Création|Voie de la Destruction|Yin-Yang|Création de toutes choses|Hamura Ōtsutsuki|Pouvoir de la Création|Sceau de la Lune|Lune artificielle|Gudōdama|Hagoromo Ōtsutsuki|Réincarnation|Renaissance|Cycle de Renaissance|Mugen Tsukuyomi|Arbre divin|Shinju|Fruit de chakra|Chakra pur|Dix-Queues complet|Ōtsutsuki|Kaguya|Byakugan de Kaguya|Rinne-Sharingan|Technique de la Lune|Sceau du Sage|Chibaku Tensei lunaire|Sceau de la mort|Sceau du Dieu|Techniques de l'Ôtsutsuki|Conscience du Chakra|Arbre sacré|Chakra des Ōtsutsuki|Technique de Kaguya|Dimension de Kaguya|Dimensions|Téléportation dimensionnelle|Jikūkan|Kamui parfait|Technique de l'espace|Technique du temps|Technique de l'âme|Technique de la vie|Technique de la mort|Technique du chaos|Technique de l'ordre|Technique de l'harmonie|Technique de l'équilibre|Technique de la Lune|Technique du Soleil|Technique des Étoiles|Technique de l'univers|Technique des Dieux|Sage des Six Chemins|Sage des Origines|Sage de la Création|Sage du Néant|Pouvoir du Néant|Techniques interdites|Dieu Shinobi|Shinobi parfait|Shinobi légendaire|Légende vivante|Ninja suprême|Maître des chakras|Maître des Bijū|Maître des Kage|Maître des Cinq Pays|Maître des shinobi|Maître du monde|Maître du temps|Maître de l'espace|Maître de la Création|Zenkai ultime".split("|").map((n,i)=>{const c=15*Math.pow(RR,i),k=i%3==0,P=4*(1+i/15)*Math.exp(.16*i),v=+(k?c/(6*P):c/P).toPrecision(3);return[n,"+"+nf(v)+(k?" par clic":" par seconde"),c,1.3+i*.0003,k?"k":"s",v]});
+const TECH=["Katon : Grande boule de feu","Suiton : Dragon d'eau","Raiton : Lame de foudre","Fûton : Grande percée","Doton : Mur de terre","Kage Bunshin","Rasengan","Chidori","Poing souple","Hakke Rokujūyon Shō","Kaiten","Sharingan","Genjutsu supérieur","Ninjutsu médical","Fūinjutsu","Sceau explosif maîtrisé","Mokuton","Hyōton","Ranton","Futton","Shakuton","Yōton","Jiton","Bakuton","Shōton","Mode Ermite","Mode Ermite des Crapauds","Mode Chakra du Kyûbi","Mode Kyûbi","Bijū Dama","Rasenshuriken","Hirudora","Hachimon Tonkō","Mangekyō Sharingan","Susanoo","Amaterasu","Tsukuyomi","Kamui","Izanagi","Izanami","Kotoamatsukami","Hiraishin","Édo Tensei","Rinnegan","Shinra Tensei","Bansho Ten'in","Chibaku Tensei","Rinne Rebirth","Mode Sage des Six Chemins","Mugen Tsukuyomi"].map((n,j)=>{const m=(2+Math.floor(j/10)*.5)*(j%10==9?1.5:1);return[n,"×"+String(m).replace(".",",")+" sur tout",15*Math.pow(RR,6*j+4)*40,m]});
+const CH=["Épreuve des clochettes","Mission du Pays des Vagues","Forêt de la Mort","Combats préliminaires","Naruto contre Neji","Invasion de Konoha","Recherche de Tsunade","Récupération de Sasuke","Vallée de la Fin","Naruto contre Gaara","Poursuite d'Itachi","Kakuzu et Hidan","Sasuke contre Itachi","Assaut de Pain sur Konoha","Sommet des Cinq Kage","Début de la Quatrième Guerre","Bataille des Bijū","Édo Tensei","Madara contre les Cinq Kage","Face à Obito","Le Dix-Queues","Réveil de Kaguya","Naruto et Sasuke contre Kaguya","Duel final","Examen des Hokage","Défense de Konoha","Mission secrète de rang S","Épreuve de l'Ermite","Épreuve des Six Chemins","Épreuve du Dieu Shinobi"].map((n,j)=>{const d=30+15*(j%4),r=["click","auto","both"][j%3];const ix=10*j+12,rat=ix<85?.1:ix<150?.75*Math.exp(.075*(ix-100)):32*Math.exp(.15*(ix-150));return["c"+j,n,d,15*Math.pow(RR,ix)*rat*d*{click:.5,auto:1.3,both:1.2}[r],r,+(1.5+.05*j).toFixed(2)]});
+const CR={full:"Clics + passif complets",click:"Clics uniquement : gains passifs coupés",auto:"Passif uniquement : les clics ne rapportent rien",both:"Clics + passif, mais passif divisé par 2"};
+const RN=["Académie","Genin","Chûnin","Jônin","ANBU","Jônin d'élite","Sannin","Garde du Kage","Kage","Légende","Ermite","Sage des Six Chemins","Réincarné","Otsutsuki","Dieu Shinobi"];
+const RK=RN.map((n,k)=>[k?15*Math.pow(RR,21*(k-1)+6)*20:0,n]);
+const rat=ix=>ix<85?.1:ix<150?.75*Math.exp(.075*(ix-100)):32*Math.exp(.15*(ix-150));
+const BN=["Zabuza","Gaara","Orochimaru","Kisame","Deidara","Itachi","Pain","Madara","Obito","Jūbi","Kaguya","Black Zetsu","Isshiki Ōtsutsuki","Momoshiki Ōtsutsuki"];
+const BOSS=BN.map((n,k)=>[n,15*Math.pow(RR,21*k+10)*rat(21*k+10)*60*1.8,60,+(2+.25*k).toFixed(2)]);
+const TREE=[["pc","Poing du Zenkai","+10 % de clics par niveau",10],["pp","Chakra infini","+10 % de passif par niveau",10],["po","Appel des orbes","Orbes 10 % plus fréquents par niveau",5],["pe","Esprit combatif","Combo maximal +0,25 par niveau",5],["pd","Maître des défis","+10 % de temps pour défis et boss par niveau",5],["pm","Économe","−2 % sur le coût des améliorations par niveau",10],["ph","Mémoire du chakra","Garde 1 % du chakra du run lors d'un Zenkai, par niveau",10]];
+const tl=id=>(S.game.zt||{})[id]||0;
+const ACH=[["Échauffement","100 clics",g=>g.st.clk>=100,1.02],["Mains rapides","1 000 clics",g=>g.st.clk>=1e3,1.05],["Poings d'acier","10 000 clics",g=>g.st.clk>=1e4,1.3],["Marteleur","100 000 clics",g=>g.st.clk>=1e5,2],
+["Premiers pas","25 niveaux d'améliorations",g=>glv()>=25,1.03],["Entraîné","150 niveaux",g=>glv()>=150,1.25],["Vétéran","500 niveaux",g=>glv()>=500,1.8],["Maître","1 500 niveaux",g=>glv()>=1500,3],
+["Initié","5 techniques",g=>g.tech.length>=5,1.05],["Technicien","15 techniques",g=>g.tech.length>=15,1.4],["Expert","30 techniques",g=>g.tech.length>=30,2.2],["Maître des techniques","50 techniques",g=>g.tech.length>=50,4],
+["Défieur","3 défis réussis",g=>g.ch.length>=3,1.05],["Compétiteur","10 défis",g=>g.ch.length>=10,1.5],["Champion","20 défis",g=>g.ch.length>=20,2.5],["Légende des défis","30 défis",g=>g.ch.length>=30,4],
+["Chasseur","1 boss vaincu",g=>g.bd.length>=1,1.05],["Pourfendeur","5 boss",g=>g.bd.length>=5,1.6],["Tueur de Kage","10 boss",g=>g.bd.length>=10,2.6],["Maître des boss","14 boss",g=>g.bd.length>=14,4],
+["Renaissance","1 Zenkai",g=>g.z>=1,1.05],["Phénix","3 Zenkai",g=>g.z>=3,1.5],["Éternel","6 Zenkai",g=>g.z>=6,2.5],["Immortel","10 Zenkai",g=>g.z>=10,4],
+["Chasseur d'orbes","10 orbes",g=>g.st.orb>=10,1.03],["Collectionneur","50 orbes",g=>g.st.orb>=50,1.5],
+["Patient","1 heure en jeu",g=>g.st.sec>=3600,1.05],["Dévoué","10 heures",g=>g.st.sec>=36000,1.8],["Acharné","50 heures",g=>g.st.sec>=180000,3]];
+const G=()=>S.game,um=l=>Math.pow(1.5,[25,50,100,200].filter(m=>l>=m).length);
+const gcost=i=>UP[i][2]*Math.pow(UP[i][3],G().u[i]||0)*(1-.02*tl("pm")),zcost=()=>15*Math.pow(RR,60)*5*Math.pow(6,G().z),zlv=()=>60+20*G().z;
+const glv=()=>G().u.reduce((a,l)=>a+(l||0),0);
+const gmult=()=>{const g=G();return(1+.15*g.z)*g.tech.reduce((a,i)=>a*TECH[i][3],1)*g.ch.reduce((a,id)=>a*CH[+id.slice(1)][5],1)*g.bd.reduce((a,id)=>a*BOSS[+id.slice(1)][3],1)*g.ach.reduce((a,i)=>a*ACH[i][3],1)};
+const gsum=t=>{let a=0;const u=G().u;for(let i=0;i<UP.length;i++){const l=u[i]||0;if(l&&UP[i][4]==t)a+=UP[i][5]*l*um(l)}return a};
+const cmb=()=>1+Math.min(1+.25*tl("pe"),cb/20),gclick=()=>(1+gsum("k"))*gmult()*(1+.1*tl("pc")),gcps=()=>gsum("s")*gmult()*(1+.1*tl("pp")),grk=()=>{let r=0;RK.forEach((x,i)=>{if(G().tot>=x[0])r=i});return r};
+const gain=v=>{const g=G();g.c+=v;g.tot+=v;g.rt+=v};
+const gvis=()=>{let m=-1;G().u.forEach((l,i)=>{if(l>0)m=i});return Math.min(UP.length-1,m+5)};
+function gmax(i){const g=G(),l=g.u[i]||0,c0=UP[i][2],r=UP[i][3],b=c0*Math.pow(r,l)*(1-.02*tl("pm"));if(g.c<b)return{n:0,t:0};let n=Math.min(5000,Math.floor(Math.log(1+g.c*(r-1)/b)/Math.log(r))),t=b*(Math.pow(r,n)-1)/(r-1);while(n>0&&t>g.c){n--;t=b*(Math.pow(r,n)-1)/(r-1)}return{n,t}}
+const TABS=["Améliorations","Techniques","Défis","Boss","Zenkai","Succès","Statistiques"];
+function gRender(){const g=G();if(gtab==6&&!S.cfg.stats)gtab=0;$("gtabs").innerHTML=TABS.map((n,i)=>i==6&&!S.cfg.stats?"":`<button class="${i==gtab?'on':''}" data-gt="${i}">${n}</button>`).join("");let h="";const note=t=>`<div class="st" style="color:var(--mut);margin-top:8px">${t}</div>`;
+  if(gtab==0){const top=gvis();for(let i=0;i<=top;i++){if(i%21==0)h+=`<h4 class="cat">${CAT[i/21|0]}</h4>`;const l=g.u[i]||0,nx=[25,50,100,200].find(m=>m>l);h+=`<div class="gur"><button class="gu" data-gu="${i}" data-cost="${gcost(i)}"><span class="n"><b>${UP[i][0]}</b> <span class="st">niv. ${l}</span><small>${UP[i][1]}${nx?" · ×1,5 au niveau "+nx:""}</small></span><b class="cost">${nf(gcost(i))}</b></button><button class="gmax" data-gm="${i}">max (0)</button></div>`}}
+  else if(gtab==1)h=TECH.map((t,i)=>i).filter(i=>!g.tech.includes(i)).slice(0,8).map(i=>{const t=TECH[i];return `<button class="gu" data-gb="${i}" data-cost="${t[2]}"><span class="n"><b>${t[0]}</b><small>${t[1]}</small></span><b class="cost">${nf(t[2])}</b></button>`}).join("")+note(`Techniques acquises : ${g.tech.length} / ${TECH.length}`);
+  else if(gtab==2)h=CH.filter(c=>!g.ch.includes(c[0])).slice(0,6).map(c=>`<div class="gu"><span class="n"><b>${c[1]}</b><small>${CR[c[4]]}</small><small>${c[2]} s · objectif ${nf(c[3])} · bonus ×${c[5]} permanent</small></span><button data-gc="${c[0]}" ${ac?"disabled":""}>Lancer</button></div>`).join("")+note(`Défis réussis : ${g.ch.length} / ${CH.length}`);
+  else if(gtab==3){const r=grk(),nb=BOSS.map((b,k)=>k).filter(k=>!g.bd.includes("b"+k)&&k+1<=r).slice(0,2);h=nb.map(k=>{const b=BOSS[k];return `<div class="gu"><span class="n"><b>Boss : ${b[0]}</b><small>${CR.full}</small><small>${b[2]} s · vie ${nf(b[1])} · bonus ×${b[3]} permanent</small></span><button data-gbs="${k}" ${ac?"disabled":""}>Combattre</button></div>`}).join("")+note(nb.length?`Boss vaincus : ${g.bd.length} / ${BOSS.length}`:(g.bd.length==BOSS.length?"Tous les boss sont vaincus !":"Un nouveau boss t'attend à chaque rang. Monte en rang pour le débloquer."))}
+  else if(gtab==4){h=`<div class="chal"><b>Points Zenkai : ${g.zp}</b><span>+${1+Math.floor((g.z+1)/4)} au prochain Zenkai</span></div>`+TREE.map(t=>{const l=tl(t[0]),mx=l>=t[3];return `<button class="gu ${!mx&&g.zp<l+1?'no':''}" data-gz="${t[0]}" ${mx?"disabled":""}><span class="n"><b>${t[1]}</b> <span class="st">niv. ${l} / ${t[3]}</span><small>${t[2]}</small></span><b class="cost">${mx?"Max":(l+1)+" pt"}</b></button>`}).join("")}
+  else if(gtab==5){const row=i=>{const a=ACH[i],ok=g.ach.includes(i);return `<div class="gu ${ok?'ok':''}"><span class="n"><b>${a[0]}</b><small>${a[1]} · bonus ×${a[3]}</small></span><b class="cost">${ok?"✔":""}</b></div>`};h=ACH.map((a,i)=>i).filter(i=>!g.ach.includes(i)).map(row).join("")+ACH.map((a,i)=>i).filter(i=>g.ach.includes(i)).map(row).join("")+note(`Succès : ${g.ach.length} / ${ACH.length}`)}
+  else{const t=g.st.sec,L=[["Temps en jeu",Math.floor(t/3600)+" h "+Math.floor(t%3600/60)+" min"],["Clics",nf(g.st.clk)],["Chakra gagné au total",nf(g.tot)],["Meilleur combo","×"+g.st.cmb.toFixed(2)],["Orbes cliqués",g.st.orb],["Niveaux d'améliorations",glv()],["Techniques",g.tech.length+" / "+TECH.length],["Défis réussis",g.ch.length+" / "+CH.length],["Boss vaincus",g.bd.length+" / "+BOSS.length],["Zenkai",g.z],["Succès",g.ach.length+" / "+ACH.length]];h=L.map(x=>`<div class="gu"><span class="n">${x[0]}</span><b class="cost">${x[1]}</b></div>`).join("")}
+  $("gup").innerHTML=h}
+function gUpdate(){const g=G(),m=gmult();$("gcn").textContent=nf(g.c);$("gstat").textContent=`${nf(gclick())} par clic · ${nf(gcps())} par seconde · multiplicateur ×${m<1e3?m.toFixed(2):nf(m)}`+(cb>2?` · combo ×${cmb().toFixed(2)}`:"")+(fr>Date.now()?` · Frénésie ×7 (${Math.ceil((fr-Date.now())/1000)} s)`:"");
+  document.querySelectorAll("#gup [data-cost]").forEach(b=>b.classList.toggle("no",g.c<+b.dataset.cost));
+  document.querySelectorAll("#gup .gmax").forEach(b=>{const x=gmax(+b.dataset.gm);b.textContent="max ("+x.n+")";b.classList.toggle("no",!x.n)});
+  let r=grk();if(lastR>=0&&r>lastR){toast("Nouveau rang : "+RK[r][1]+" !");sOk()}lastR=r;
+  const nm=RK[r][1]+(g.z?` · Zenkai ${g.z}`:"");$("grank").textContent=nm;$("gsum").textContent=`${nm} · ${nf(g.c)} chakra`;
+  const nx=RK[r+1];$("gprog").style.width=nx?Math.min(100,(g.tot-RK[r][0])/(nx[0]-RK[r][0])*100)+"%":"100%";$("gnext").textContent=nx?`Prochain rang : ${nx[1]} (${nf(g.tot)} / ${nf(nx[0])})`:"Rang maximum atteint";
+  if(ac){const w=$("gch").firstElementChild;if(!w||w.dataset.id!=ac.id)$("gch").innerHTML=`<div class="chal" data-id="${ac.id}"><b>Défi : ${ac.n}</b><span id="gct"></span><button id="gstop">Abandonner</button><div class="gbar"><i id="gcb" style="transition:none"></i></div></div>`;$("gct").textContent=`${Math.ceil(ac.t)} s · ${nf(ac.s)} / ${nf(ac.tg)}`;$("gcb").style.width=Math.min(100,ac.s/ac.tg*100)+"%"}else $("gch").innerHTML="";
+  const zb=$("gzen"),lv=glv();zb.disabled=!(g.rt>=zcost()&&lv>=zlv())||!!ac;zb.textContent=`Zenkai : ${nf(Math.min(g.rt,zcost()))} / ${nf(zcost())} chakra · niv. ${Math.min(lv,zlv())} / ${zlv()} (+15 %)`}
+function endCh(){const g=G(),ok=ac.s>=ac.tg;const bs=ac.id[0]=="b";if(ok){(bs?g.bd:g.ch).push(ac.id);sOk();toast(`${bs?"Boss vaincu":"Défi réussi"} : ${ac.n} ! Bonus ×${ac.b} permanent`)}else toast(bs?"Boss non vaincu, réessaie !":"Défi échoué, réessaie !");ac=null;save();gRender()}
+$("gplay").addEventListener("click",()=>{$("dGame").showModal();gRender();gUpdate()});
+$("dGame").addEventListener("close",()=>{if(ac){ac=null;gRender()}if(VW=="ck"){VW="hub";EN=null;showV()}});
+addEventListener("keydown",e=>{if(e.code=="Space"&&$("dGame").open&&!e.repeat&&e.target.tagName!="INPUT"){e.preventDefault();$("gtarget").click()}});
+$("game").addEventListener("click",e=>{const g=G(),b=e.target.closest("button");if(!b)return;const d=b.dataset;
+  if(b.id=="gtarget"){if(ac&&ac.r=="auto")return;cb+=1;g.st.clk++;g.st.cmb=Math.max(g.st.cmb,cmb());const v=gclick()*cmb()*(fr>Date.now()&&!ac?7:1);if(ac)ac.s+=v;else gain(v);
+    if(S.cfg.anim){const f=document.createElement("span"),h=$("game").getBoundingClientRect(),q=b.getBoundingClientRect();f.className="fl";f.textContent="+"+nf(v);f.style.left=(e.clientX||q.left+q.width/2)-h.left+(Math.random()*40-20)+"px";f.style.top=(e.clientY||q.top+q.height/2)-h.top-10+"px";$("game").appendChild(f);setTimeout(()=>f.remove(),800)}gUpdate()}
+  else if(b.id=="gstop"){ac=null;toast("Défi abandonné");gRender();gUpdate()}
+  else if(d.gt!==undefined){gtab=+d.gt;gRender();gUpdate()}
+  else if(d.gu!==undefined){if(ac)return toast("Pas d'achat pendant un défi");const i=+d.gu,c=gcost(i);if(g.c>=c){g.c-=c;g.u[i]=(g.u[i]||0)+1;save();gRender();gUpdate()}}
+  else if(d.gm!==undefined){if(ac)return toast("Pas d'achat pendant un défi");const i=+d.gm,x=gmax(i);if(x.n){g.c-=x.t;g.u[i]=(g.u[i]||0)+x.n;save();gRender();gUpdate()}}
+  else if(d.gb!==undefined){if(ac)return toast("Pas d'achat pendant un défi");const i=+d.gb,t=TECH[i];if(!g.tech.includes(i)&&g.c>=t[2]){g.c-=t[2];g.tech.push(i);spark(b,EC[0]);sOk();save();gRender();gUpdate()}}
+  else if(d.gz){const t=TREE.find(x=>x[0]==d.gz),l=tl(t[0]);if(l<t[3]&&g.zp>=l+1){g.zp-=l+1;g.zt[t[0]]=l+1;save();gRender();gUpdate()}}
+  else if(d.gbs!==undefined){if(ac)return;const k=+d.gbs,bs=BOSS[k];ac={id:"b"+k,n:bs[0],t:bs[2]*(1+.1*tl("pd")),tg:bs[1],r:"full",b:bs[3],s:0};gRender();gUpdate()}
+  else if(d.gc){if(ac)return;const c=CH.find(x=>x[0]==d.gc);ac={id:c[0],n:c[1],t:c[2]*(1+.1*tl("pd")),tg:c[3],r:c[4],b:c[5],s:0};gRender();gUpdate()}
+  else if(b.id=="grst"){if(confirm("Remettre le jeu à zéro ? Tout est perdu (chakra, techniques, défis, Zenkai).")){S.game=gfix({v:0});ac=null;lastR=-1;save();gRender();gUpdate()}}
+  else if(b.id=="gzen"){if(g.rt>=zcost()&&glv()>=zlv()&&confirm("Renaître avec le Zenkai ? Ton chakra et tes améliorations repartent à zéro. Tu gardes tes techniques et défis, et tu gagnes +15 % de puissance permanente.")){g.z++;g.zp+=1+Math.floor(g.z/4);g.c=g.rt*.01*tl("ph");g.rt=0;g.u=[];spark(b,EC[0]);sOk();save();gRender();gUpdate()}}
+  else if(b.classList.contains("orb")){const t=d.ot,v=Math.max(gcps()*(t=="m"?15:20),gclick()*(t=="m"?10:15));g.st.orb++;spark(b,EC[0]);b.remove();
+    if(t=="f"){fr=Date.now()+20000;toast("Frénésie ! Clics ×7 pendant 20 s")}else if(t=="r"){toast("Pluie de chakra !");for(let i=0;i<12;i++)setTimeout(()=>{if($("dGame").open)spawnOrb("m",1)},i*400)}else{gain(v);if(t=="c")toast("Orbe de chakra : +"+nf(v))}gUpdate()}});
+function spawnOrb(t,mini){const o=document.createElement("button");o.className="orb"+(mini?" mini":"");o.dataset.ot=t;o.textContent={c:"🔶",f:"⚡",r:"💧",m:"💧"}[t];o.style.left=8+Math.random()*80+"%";o.style.top=15+Math.random()*60+"%";$("game").appendChild(o);setTimeout(()=>o.remove(),mini?6000:9000)}
+function chkAch(){const g=G();ACH.forEach((a,i)=>{if(!g.ach.includes(i)&&a[2](g)){g.ach.push(i);toast("Succès : "+a[0]+" ! Bonus ×"+a[3]);sOk();save();if($("dGame").open&&gtab==5)gRender()}})}
+setInterval(chkAch,1000);
+const saveQ=()=>{try{G().seen=Date.now();localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+setInterval(()=>{cb*=.9355;if($("dGame").open)G().st.sec+=.1;if(ac){ac.t-=.1;if(ac.r!="click")ac.s+=gcps()*(ac.r=="both"?.5:1)/10;if(ac.s>=ac.tg||ac.t<=0)endCh();gUpdate();return}const v=gcps()/10;if(v)gain(v);if($("dGame").open)gUpdate()},100);
+setInterval(()=>{saveQ();gUpdate()},5000);addEventListener("beforeunload",saveQ);
+(function orbLoop(){setTimeout(()=>{if($("dGame").open&&!ac){const q=Math.random();spawnOrb(q<.6?"c":q<.8?"f":"r")}orbLoop()},(20000+Math.random()*40000)*(1-.1*tl("po")))})();
+{const g=G(),dt=Math.min((Date.now()-(g.seen||Date.now()))/1000,3600),v=gcps()*dt*.25;if(v>=1){gain(v);setTimeout(()=>toast("Pendant ton absence : +"+nf(v)+" chakra"),900)}g.seen=Date.now()}
+const WK="atelier-zenkai-wiki-v1";
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const mk=(name,x)=>Object.assign({id:uid(),name,lore:"",video:"",entries:[]},x);
+const DEFW=()=>({tech:[{id:"nature",name:"Natures de chakra",groups:["Katon","Suiton","Raiton","Fûton","Doton"].map(n=>mk(n))},{id:"sub",name:"Subjutsu",flat:1,groups:[mk("Subjutsu")]},{id:"spec",name:"Spécialités",groups:[]},{id:"kg",name:"Kekkei Genkai",groups:[]},{id:"voie",name:"Voies de combat",groups:["Kenjutsu","Taijutsu","Taijutsu-ka"].map(n=>mk(n))}],clans:["Konoha","Uchiha","Senju","Nara","Akimichi","Hyuga","Suna","Hakumei","Hoki","Shirogane","Roran","Sabaku"].map(n=>mk(n,{logo:""}))});
+let WD;
+let WE,OLD=null;try{WE=JSON.parse($("wikidata").textContent)}catch(e){}
+if(WE&&(!WD||(WD.rev||0)<(WE.rev||0))){OLD=WD;WD=WE}
+WD=WD||DEFW();
+let ADM=false,VW="hub",TS="nature",GS=null,CS=null,EN=null,RF="",EDO,EDF,EDC;
+function vidHTML(o){const u=(o.video||"").trim();if(!/^https?:\/\//i.test(u))return "";const m=u.match(/(?:youtu\.be\/|v=|embed\/)([\w-]{11})/);if(m)return `<iframe class="vid" src="https://www.youtube.com/embed/${m[1]}" allowfullscreen></iframe><a href="${esc(u)}" target="_blank" rel="noopener">Ouvrir la vidéo</a>`;if(/\.(mp4|webm|ogg)(\?|$)/i.test(u))return `<video controls class="vid" src="${esc(u)}"></video>`;return `<a href="${esc(u)}" target="_blank" rel="noopener">▶ Voir la vidéo</a>`}
+async function loadVids(){for(const v of document.querySelectorAll("video[data-vl]")){const b=await idbGet("vid:"+v.dataset.vl);if(b)v.src=URL.createObjectURL(b)}}
+const imgOk=o=>/^(https?:\/\/|data:image\/)/i.test(o.image||"");
+const gi=(o,f)=>imgOk(o)?`<img class="thc" loading="lazy" alt="" src="${esc(o.image)}">`:`<span class="gi">${esc(f)}</span>`;
+const imgH=o=>imgOk(o)?`<img class="im" loading="lazy" alt="" src="${esc(o.image)}">`:"";
+const nz=t=>(t||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+const RKS=["D","C","B","A","S","S+","X"],RC={D:"#7bd88f",C:"#4fc3f7",B:"#b388ff",A:"#ffb347",S:"#ff5c7a","S+":"#ff4fd8",X:"#ffd700"},rc=r=>RC[(r||"").toUpperCase()]||"#8f93b5",rki=r=>{const i=RKS.indexOf((r||"").toUpperCase());return i<0?99:i};
+const sortE=l=>l.map((e,i)=>[e,i]).sort((a,b)=>rki(a[0].rang)-rki(b[0].rang)||a[1]-b[1]).map(x=>x[0]);
+const TH={katon:["#ff6a3d","🔥"],suiton:["#3aa0ff","💧"],raiton:["#ffd23d","⚡"],futon:["#3ddc97","🌪️"],doton:["#b8864b","🪨"],futton:["#e86bd1","♨️"],deiton:["#9c7a52","🌋"],ranton:["#7a7bff","⛈️"],kenjutsu:["#c0c8e0","🗡️"],taijutsu:["#ff8a3d","👊"],"taijutsu-ka":["#ff5c7a","🥋"],subjutsu:["#4fd1ff","🌀"]};
+const thm=n=>{const k=nz(n);if(TH[k])return TH[k];let h=0;for(const c of k)h=(h*31+c.charCodeAt(0))%360;return[`hsl(${h} 70% 60%)`,"✦"]};
+const cok=c=>/^#[0-9a-f]{6}$/i.test(c||"");
+const thc=o=>{const t=thm(o.name);return cok(o.color)?[o.color,t[1]]:t};
+const card=e=>`<button class="tc" data-en="${e.id}" style="--rc:${cok(e.color)?e.color:rc(e.rang)}"><span class="rk">${esc(e.rang||"?")}</span><b>${esc(e.name||"Sans nom")}</b><span class="ms">${e.chakra?`<i>💠 ${esc(e.chakra)}</i>`:""}${e.cd?`<i>⏱ ${esc(e.cd)}</i>`:""}</span>${e.dmg?`<span class="dm">💥 ${esc(e.dmg)}</span>`:""}${imgOk(e)?`<img class="tci" loading="lazy" alt="" src="${esc(e.image)}">`:""}${qb("ent","",e.id)}</button>`;
+function gView(g,clan,back){const th=thc(g),L=sortE(g.entries),rs=RKS.filter(r=>L.some(e=>(e.rang||"").toUpperCase()==r));if(L.some(e=>rki(e.rang)==99))rs.push("?");const rf=rs.includes(RF)?RF:"";
+const sh=rs.filter(r=>!rf||r==rf).map(r=>{const l=L.filter(e=>r=="?"?rki(e.rang)==99:(e.rang||"").toUpperCase()==r);return `<h3 class="rh" style="--rc:${rc(r)}"><span>${r=="?"?"Sans rang":"Rang "+r}</span><em>${l.length}</em></h3><div class="tg">${l.map(card).join("")}</div>`}).join("");
+return `${back?`<div class="crumb">${back}</div>`:""}<div class="hero" style="--ec:${th[0]}">${imgOk(g)?`<img class="hth" alt="" src="${esc(g.image)}">`:`<span class="gi">${esc(clan?(g.logo||g.name[0]):th[1])}</span>`}<div><h2>${esc(g.name)}</h2><p>${L.length} ${clan?"capacité":"technique"}${L.length>1?"s":""}</p></div></div>${g.lore?`<p class="lore" style="max-width:80ch;margin:16px 0">${esc(g.lore)}</p>`:""}${vidHTML(g)}${rs.length>1?`<div class="rf"><button class="${rf?"":"on"}" data-rk="">Tous</button>${rs.map(r=>`<button class="${r==rf?"on":""}" data-rk="${r}" style="--rc:${rc(r)}">${r}</button>`).join("")}</div>`:""}${sh||emp("Aucune fiche pour l'instant.")}`}
+function rDet(){const el=$("det"),g=EN?cur():null,L=g?sortE(g.entries):[],e=L.find(x=>x.id==EN);if(!e){el.className="";el.innerHTML="";document.body.style.overflow="";rDet.l=null;return}
+const th=thc(g),i=L.indexOf(e),p=L[i-1],n=L[i+1],tile=(l,v,ic)=>v?`<div class="sx"><span>${ic} ${l}</span><b>${esc(v)}</b></div>`:"",fx=(e.fx||"").split(" · ").filter(Boolean);
+el.className="on";el.style.cssText=`--ec:${cok(e.color)?e.color:th[0]};--rc:${cok(e.color)?e.color:rc(e.rang)}`;
+el.innerHTML=`<div class="dt"><div class="dbar"><button data-dx="1">← ${esc(g.name)}</button><span class="dn">${p?`<button data-dn="${p.id}" title="Précédente">‹</button>`:""}${n?`<button data-dn="${n.id}" title="Suivante">›</button>`:""}<button data-dx="1" title="Fermer">✕</button></span></div><div class="dh"><span class="wm">${esc(e.rang||"")}</span><span class="bd">Rang ${esc(e.rang||"?")}</span><span class="bd2">${esc(VW=="cl"?g.name:th[1]+" "+g.name)}</span><h2>${esc(e.name||"Sans nom")}</h2>${e.cat?`<p style="color:var(--mut)">${esc(e.cat)}</p>`:""}</div><div class="st3">${tile("Chakra",e.chakra,"💠")}${tile("Cooldown",e.cd,"⏱")}${tile("Dégâts",e.dmg,"💥")}</div>${fx.length?`<h3>Effets</h3><div class="fxc">${fx.map(x=>`<span>${esc(x)}</span>`).join("")}</div>`:""}<div class="dg"><div>${e.desc?`<h3>Description</h3><p class="lore">${esc(e.desc)}</p>`:""}${e.extra?`<h3>Informations</h3><p class="lore">${esc(e.extra)}</p>`:""}${!e.desc&&!e.extra?emp("Description à venir."):""}</div><div>${imgH(e)}${vidHTML(e)||emp("Pas de vidéo pour l'instant.")}</div></div></div>`;
+if(rDet.l!=EN)el.scrollTop=0;rDet.l=EN;document.body.style.overflow="hidden";loadVids()}
+addEventListener("keydown",e=>{if(e.key=="Escape"&&EN&&!document.querySelector("dialog[open]")){EN=null;rDet()}});
+document.addEventListener("click",e=>{if(!e.target.closest(".sb"))$("sres").style.display="none"});
+$("sq").addEventListener("keydown",e=>{if(e.key=="Enter"){const b=$("sres").querySelector("button");if(b)b.click()}});
+const emp=t=>`<p class="lore" style="color:var(--mut)"><i>${t}</i></p>`;
+const sec=()=>WD.tech.find(x=>x.id==TS),cur=()=>VW=="cl"?WD.clans.find(x=>x.id==CS):(sec().flat?sec().groups[0]:sec().groups.find(x=>x.id==GS));
+function rTech(){const c=sec();let h=`<div class="tabs">${WD.tech.map(x=>`<button class="${x.id==TS?"on":""}" data-ts="${x.id}">${esc(x.name)}</button>`).join("")}</div>`;
+  if(c.flat)h+=gView(c.groups[0]);else{const g=cur();if(g)h+=gView(g,0,`<button data-gb="1">← ${esc(c.name)}</button>`);else h+=`<div class="gg">${c.groups.map(g=>{const t=thc(g);return `<button class="gc" data-gs="${g.id}" style="--ec:${t[0]}">${gi(g,t[1])}<b>${esc(g.name)}</b><small>${g.entries.length} technique${g.entries.length>1?"s":""}</small>${qb("grp",c.id,g.id)}</button>`}).join("")||emp("Aucune catégorie pour l'instant.")}</div>`}
+  $("v-te").innerHTML=`<div class="wk">${h}</div>`;loadVids()}
+function rClan(){const c=cur();$("v-cl").innerHTML=`<div class="wk">`+(c?gView(c,1,`<button data-cb="1">← Tous les clans</button>`):`<div class="gg">${WD.clans.map(c=>{const t=thc(c);return `<button class="gc" data-cc="${c.id}" style="--ec:${t[0]}">${gi(c,c.logo||c.name[0])}<b>${esc(c.name)}</b><small>${c.entries.length} capacité${c.entries.length>1?"s":""}</small>${qb("clan","",c.id)}</button>`}).join("")}</div>`)+`</div>`;loadVids()}
+const HUB=[["eq","⚔️","Équipements","Recettes, matériaux et plan de fabrication","#ffb347"],["te","🌀","Techniques","Natures de chakra, Subjutsu, spécialités, Kekkei Genkai et voies de combat","#4fd1ff"],["cl","🩸","Clans","Lore, capacités et vidéos de chaque clan","#ff5c7a"],["ck","🖱️","Clicker","Entraîne-toi et progresse","#5be3a0"]];
+function rHub(){const n=WD.tech.reduce((a,s)=>a+s.groups.reduce((b,g)=>b+g.entries.length,0),0);$("v-hub").innerHTML=`<div class="wk"><div class="hh0"><h2 class="hh">Wiki Zenkai</h2><p>${n} techniques · ${WD.clans.length} clans. Choisis une section.</p></div><div class="gg hub">${HUB.map(h=>`<button class="gc" data-v="${h[0]}" style="--ec:${h[4]}"><span class="gi">${h[1]}</span><b>${h[2]}</b><small>${h[3]}</small></button>`).join("")}</div></div>`}
+function srch(q){const T=nz(q).split(/\s+/).filter(Boolean),ok=nz(q).trim().length>1,r=[];
+if(ok){const sc=o=>{const n=nz(o.name),a=nz([o.name,o.cat,o.rang,o.desc,o.lore,o.fx,o.dmg].join(" "));return T.every(t=>a.includes(t))?(T.every(t=>n.includes(t))?0:1):-1};
+WD.tech.forEach(s=>s.groups.forEach(g=>{let k=sc(g);if(k>=0)r.push([k,s.name,g.name,"te",s.id,g.id,"",""]);g.entries.forEach(e=>{k=sc(e);if(k>=0)r.push([k,s.name+" › "+g.name,e.name,"te",s.id,g.id,e.id,e.rang])})}));
+WD.clans.forEach(c=>{let k=sc(c);if(k>=0)r.push([k,"Clans",c.name,"cl","",c.id,"",""]);c.entries.forEach(e=>{k=sc(e);if(k>=0)r.push([k,"Clan "+c.name,e.name,"cl","",c.id,e.id,e.rang])})})}
+r.sort((a,b)=>a[0]-b[0]);
+$("sres").innerHTML=r.slice(0,14).map(x=>`<button data-sr="${x[3]}" data-s1="${x[4]}" data-s2="${x[5]}" data-s3="${x[6]}"><span class="sb2" style="--rc:${x[7]?rc(x[7]):"var(--line)"}">${esc(x[7]||"•")}</span><span><b>${esc(x[2]||"Sans nom")}</b><small>${esc(x[1])}</small></span></button>`).join("")||(ok?`<p class="st" style="padding:10px;color:var(--mut)">Aucun résultat.</p>`:"");$("sres").style.display=ok?"block":"none"}
+$("sq").addEventListener("input",e=>srch(e.target.value));
+document.addEventListener("input",e=>{if(e.target.classList.contains("flt")){const q=e.target.value.toLowerCase();document.querySelectorAll(".ent").forEach(n=>n.style.display=n.textContent.toLowerCase().includes(q)?"":"none")}});
+function showV(){document.querySelectorAll(".view").forEach(v=>v.classList.toggle("on",v.id=="v-"+VW));document.querySelectorAll("#nav [data-v]").forEach(b=>b.classList.toggle("on",b.dataset.v==VW));document.body.dataset.v=VW;if(VW=="hub")rHub();if(VW=="te")rTech();if(VW=="cl")rClan();rDet()}
+const rr=()=>{VW=="cl"?rClan():rTech();rDet()};
+const qb=()=>"";
+function setRole(r){VW="hub";showV()}
+document.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const d=b.dataset,c=VW=="eq"||VW=="ck"?null:cur();
+  if(d.v){VW=d.v;EN=null;showV();if(VW=="ck"&&!$("dGame").open)$("gplay").click()}
+  else if(d.en){EN=d.en;rDet()}
+  else if(d.dn){EN=d.dn;rDet()}
+  else if(d.dx){EN=null;rDet()}
+  else if(d.rk!==undefined&&b.hasAttribute("data-rk")){RF=d.rk;rTech();if(VW=="cl")rClan()}
+  else if(d.gb){GS=null;EN=null;RF="";rTech()}
+  else if(d.sr){VW=d.sr;RF="";EN=d.s3||null;if(VW=="te"){TS=d.s1;GS=d.s2}else CS=d.s2;$("sq").value="";srch("");showV()}
+  else if(d.ts){TS=d.ts;GS=null;EN=null;RF="";rTech()}
+  else if(d.gs){GS=d.gs;RF="";rTech()}
+  else if(d.cc){CS=d.cc;RF="";rClan()}
+  else if(d.cb){CS=null;EN=null;RF="";rClan()}
+});
+setRole("v");
+fetch("wiki-data.json",{cache:"no-store"}).then(r=>r.ok?r.json():Promise.reject()).then(x=>{if(x&&x.tech&&x.clans){WD=x;showV()}}).catch(()=>{});
+applyCfg();syncSet();all();
+</script>
+</body>
+</html>
